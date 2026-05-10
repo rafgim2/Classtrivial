@@ -814,8 +814,10 @@
     }
 
     async function claimHostIfAllowed() {
+      // Si la cuenta autorizada ha iniciado sesión, este dispositivo debe tomar
+      // el control de la partida aunque antes hubiera entrado otro jugador.
+      // Así los alumnos nunca se quedan como creadores por accidente.
       if (!isAllowedHostAccount || !playerId || !room) return;
-      if (room.hostId && room.hostId !== playerId) return;
       if (room.hostId === playerId) return;
 
       try {
@@ -871,7 +873,7 @@
       }
 
       const currentRoom = (await getDoc(roomRef)).data();
-      const shouldBecomeHost = !currentRoom?.hostId && isAllowedHostAccount;
+      const shouldBecomeHost = isAllowedHostAccount;
 
       await setDoc(doc(playersRef, playerId), {
         name: playerName,
