@@ -472,6 +472,17 @@
     }
 
 
+    .copyright-note {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 2px solid rgba(107, 114, 128, 0.22);
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280;
+      font-weight: 900;
+    }
+
+
     .winner-overlay {
       position: fixed;
       inset: 0;
@@ -598,6 +609,121 @@
       to { transform: scale(1.055); }
     }
 
+    .loser-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(17, 24, 39, 0.42);
+      backdrop-filter: blur(4px);
+      animation: loserOverlayIn 0.35s ease both;
+    }
+
+    .loser-overlay.hidden {
+      display: none;
+    }
+
+    .loser-card {
+      width: min(560px, 92vw);
+      border-radius: 34px;
+      padding: clamp(22px, 4vw, 34px);
+      text-align: center;
+      background: rgba(255,255,255,0.96);
+      border: 5px solid #93c5fd;
+      box-shadow: 0 22px 60px rgba(0,0,0,0.26), inset 0 0 0 4px rgba(255,255,255,0.7);
+      position: relative;
+      overflow: hidden;
+      animation: loserCardIn 0.55s cubic-bezier(.2,1.15,.35,1) both;
+    }
+
+    .loser-card::before,
+    .loser-card::after {
+      content: "⭐";
+      position: absolute;
+      font-size: 42px;
+      opacity: 0.55;
+      animation: loserStarFloat 1.8s ease-in-out infinite alternate;
+    }
+
+    .loser-card::before {
+      top: 18px;
+      left: 22px;
+    }
+
+    .loser-card::after {
+      bottom: 16px;
+      right: 24px;
+      animation-delay: 0.45s;
+    }
+
+    .loser-icon {
+      display: inline-block;
+      font-size: clamp(70px, 15vw, 132px);
+      line-height: 1;
+      margin-bottom: 10px;
+      animation: loserIconBounce 1.4s ease-in-out infinite;
+      filter: drop-shadow(0 14px 16px rgba(0,0,0,0.18));
+    }
+
+    .loser-title {
+      font-size: clamp(34px, 6vw, 62px);
+      line-height: 1;
+      font-weight: 1000;
+      color: #1e3a8a;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+
+    .loser-message {
+      margin: 0 auto;
+      max-width: 450px;
+      color: #374151;
+      font-size: clamp(20px, 3vw, 30px);
+      line-height: 1.15;
+      font-weight: 950;
+    }
+
+    .loser-winner-line {
+      margin-top: 18px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: clamp(18px, 2.4vw, 24px);
+      font-weight: 1000;
+      display: inline-block;
+    }
+
+    .loser-close {
+      margin-top: 24px;
+      width: auto;
+      min-width: 210px;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    @keyframes loserOverlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes loserCardIn {
+      0% { transform: scale(0.82) translateY(22px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    @keyframes loserIconBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-8px) scale(1.035); }
+    }
+
+    @keyframes loserStarFloat {
+      from { transform: translateY(0) rotate(-8deg); opacity: 0.35; }
+      to { transform: translateY(-10px) rotate(10deg); opacity: 0.75; }
+    }
+
 
 
     .host-auth-box {
@@ -637,6 +763,17 @@
       <div class="winner-player-name" id="winnerOverlayName">Ganador</div>
       <p class="winner-subtitle">¡Fanfarria de campeón!</p>
       <button class="btn secondary winner-close" id="winnerCloseBtn">Cerrar celebración 🎉</button>
+    </div>
+  </div>
+
+
+  <div class="loser-overlay hidden" id="loserOverlay">
+    <div class="loser-card">
+      <div class="loser-icon">👏</div>
+      <div class="loser-title">¡Buen intento!</div>
+      <p class="loser-message">Sigue practicando y en la próxima ronda puedes ganar.</p>
+      <div class="loser-winner-line" id="loserWinnerLine">Ganador: —</div>
+      <button class="btn secondary loser-close" id="loserCloseBtn">Cerrar mensaje ⭐</button>
     </div>
   </div>
 
@@ -760,6 +897,8 @@
         <p class="small-note">
           Sala fija: <strong>aula</strong>. 
         </p>
+
+        <div class="copyright-note">© By Rafael Gimeno</div>
       </aside>
     </div>
   </main>
@@ -839,6 +978,7 @@
     let autoAdvanceQuestionKey = "";
     let cleanupScheduled = false;
     let winnerCelebrationShownFor = "";
+    let loserEncouragementShownFor = "";
     let unsubscribeRoom = null;
     let unsubscribePlayers = null;
 
@@ -878,6 +1018,7 @@
     $("teacherLoginBtn").addEventListener("click", teacherLogin);
     $("teacherLogoutBtn").addEventListener("click", teacherLogout);
     $("winnerCloseBtn").addEventListener("click", hideWinnerCelebration);
+    $("loserCloseBtn").addEventListener("click", hideLoserEncouragement);
 
     $("playerName").addEventListener("keydown", (ev) => {
       if (ev.key === "Enter") joinGame();
@@ -1318,6 +1459,7 @@
 
       if (!playerId || !myPlayer) {
         stopHostMusic();
+        hideLoserEncouragement();
         showScreen("join");
         return;
       }
@@ -1326,9 +1468,11 @@
         stopHostMusic();
         stopWinnerMusic();
         hideWinnerCelebration();
+        hideLoserEncouragement();
         clearAutoAdvance();
         cleanupScheduled = false;
         winnerCelebrationShownFor = "";
+        loserEncouragementShownFor = "";
 
         if (isHost) {
           showScreen("setup");
@@ -1366,7 +1510,11 @@
         $("winnerName").textContent = winner ? `🏆 ${winner.name}` : "🏆";
 
         if (winner && winner.id === playerId) {
+          hideLoserEncouragement();
           showWinnerCelebration(winner);
+        } else if (winner && playerId && myPlayer) {
+          hideWinnerCelebration();
+          showLoserEncouragement(winner);
         }
 
         $("resetGameBtn").classList.toggle("hidden", !isHost);
@@ -1512,6 +1660,19 @@
       stopWinnerMusic();
     }
 
+    function showLoserEncouragement(winner) {
+      const encouragementKey = `${room?.generationId || "game"}_${playerId}_${room?.finishedAt?.seconds || "finished"}`;
+      if (loserEncouragementShownFor === encouragementKey) return;
+
+      loserEncouragementShownFor = encouragementKey;
+      $("loserWinnerLine").textContent = `Ganador: ${winner.name || "—"}`;
+      $("loserOverlay").classList.remove("hidden");
+    }
+
+    function hideLoserEncouragement() {
+      $("loserOverlay").classList.add("hidden");
+    }
+
     function playAnswerSound(correct) {
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -1610,8 +1771,11 @@
       stopHostMusic();
       stopWinnerMusic();
       hideWinnerCelebration();
+      hideLoserEncouragement();
       clearAutoAdvance();
       cleanupScheduled = false;
+      winnerCelebrationShownFor = "";
+      loserEncouragementShownFor = "";
 
       const deletes = players.map(p => deleteDoc(doc(playersRef, p.id)));
       await Promise.all(deletes);
