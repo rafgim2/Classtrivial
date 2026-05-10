@@ -876,6 +876,8 @@
         <div id="screenSetup" class="screen">
           <h1>Prepara la partida</h1>
           <p class="subtitle">Eres el primero en entrar: tú eliges la temática y las preguntas.</p>
+          <div class="notice">Comparte este código con tus alumnos:</div>
+          <div class="room-code-badge" id="setupRoomCodeBadge">----</div>
 
           <div class="form-grid two">
             <div>
@@ -1143,6 +1145,7 @@
       playersRef = collection(db, "trivialRooms", roomCode, "players");
       updateUrlRoomCode(roomCode);
       updateSideRoomCode();
+      updateRoomCodeBadge();
     }
 
     async function selectRoom(code, { checkExists = true, silentIfMissing = false } = {}) {
@@ -1177,6 +1180,9 @@
       clearAutoAdvance();
 
       setupRoomRefs(normalized);
+      $("roomCodeInput").value = normalized;
+      hideNotice("roomNotice");
+      updateRoomCodeBadge();
       await ensureRoomExists();
       listenRoom();
       listenPlayers();
@@ -1195,13 +1201,42 @@
       }
 
       hideNotice("roomNotice");
+
+      // Generamos el código UNA sola vez y usamos ese mismo valor para:
+      // - la ruta real de Firestore: trivialRooms/{code}
+      // - la URL: ?room={code}
+      // - el número que se muestra en pantalla
+      // - el código que escriben los alumnos
       const code = await generateUniqueRoomCode();
+
+      unsubscribeRoom?.();
+      unsubscribePlayers?.();
+      stopHostMusic();
+      stopWinnerMusic();
+      hideWinnerCelebration();
+      hideLoserEncouragement();
+      clearAutoAdvance();
+
+      room = null;
+      players = [];
+      myPlayer = null;
+      cleanupScheduled = false;
+      winnerCelebrationShownFor = "";
+      loserEncouragementShownFor = "";
+
       setupRoomRefs(code);
-      await resetRoomDocument({ hostEmail: currentUser?.email || "", hostUid: currentUser?.uid || "" });
+      $("roomCodeInput").value = code;
+      updateRoomCodeBadge();
+      updateSideRoomCode();
+
+      await resetRoomDocument({
+        hostEmail: currentUser?.email || "",
+        hostUid: currentUser?.uid || ""
+      });
+
       listenRoom();
       listenPlayers();
       showScreen("join");
-      $("roomCodeInput").value = code;
     }
 
     async function generateUniqueRoomCode() {
@@ -1766,8 +1801,12 @@
     }
 
     function updateRoomStatus() {
-      if (!roomCode || !room) {
+      if (!roomCode) {
         $("roomStatus").textContent = "Sin sala seleccionada";
+        return;
+      }
+      if (!room) {
+        $("roomStatus").textContent = `Sala ${roomCode} · Cargando...`;
         return;
       }
       const labels = {
@@ -1786,10 +1825,25 @@
     }
 
     function updateRoomCodeBadge() {
-      const badge = $("roomCodeBadge");
-      if (!badge) return;
-      badge.textContent = roomCode || "----";
-      badge.classList.toggle("hidden", !roomCode || !["waiting", "loading", "playing"].includes(room?.status));
+      const displayCode = roomCode || "----";
+
+      const waitingBadge = $("roomCodeBadge");
+      if (waitingBadge) {
+        waitingBadge.textContent = displayCode;
+        waitingBadge.classList.toggle("hidden", !roomCode || !["waiting", "loading", "playing"].includes(room?.status));
+      }
+
+      const joinBadge = $("joinRoomCodeBadge");
+      if (joinBadge) {
+        joinBadge.textContent = displayCode;
+        joinBadge.classList.toggle("hidden", !roomCode);
+      }
+
+      const setupBadge = $("setupRoomCodeBadge");
+      if (setupBadge) {
+        setupBadge.textContent = displayCode;
+        setupBadge.classList.toggle("hidden", !roomCode);
+      }
     }
 
     function updateLeaveRoomButton() {
