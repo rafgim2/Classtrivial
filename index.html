@@ -771,6 +771,10 @@
       margin-top: 16px;
     }
 
+    .room-actions.only-join {
+      grid-template-columns: 1fr;
+    }
+
     @media (max-width: 700px) {
       .room-actions { grid-template-columns: 1fr; }
     }
@@ -845,9 +849,9 @@
             </div>
           </div>
 
-          <div class="room-actions">
+          <div class="room-actions only-join" id="roomActions">
             <button class="btn secondary" id="joinRoomBtn">Entrar en sala 🔑</button>
-            <button class="btn warning" id="createRoomBtn">Crear sala nueva ✨</button>
+            <button class="btn warning hidden" id="createRoomBtn">Crear sala nueva ✨</button>
           </div>
 
           <div class="notice hidden" id="roomNotice"></div>
@@ -1109,6 +1113,7 @@
         currentUser = user;
         isAllowedHostAccount = Boolean(user?.email && user.email.toLowerCase() === ALLOWED_HOST_EMAIL.toLowerCase());
         updateHostAuthBox();
+        updateRoomAccessButtons();
         await claimHostIfAllowed();
         renderByStatus();
       });
@@ -1119,6 +1124,7 @@
         showScreen("room");
         updateRoomStatus();
         updateSideRoomCode();
+        updateRoomAccessButtons();
       }
     }
 
@@ -1321,6 +1327,16 @@
         loginBtn.classList.add("hidden");
         logoutBtn.classList.remove("hidden");
       }
+    }
+
+    function updateRoomAccessButtons() {
+      const createBtn = $("createRoomBtn");
+      const actions = $("roomActions");
+      if (!createBtn || !actions) return;
+
+      const canCreateRoom = Boolean(isAllowedHostAccount);
+      createBtn.classList.toggle("hidden", !canCreateRoom);
+      actions.classList.toggle("only-join", !canCreateRoom);
     }
 
     /************************************************************
