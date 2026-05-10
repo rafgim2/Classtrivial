@@ -471,6 +471,31 @@
       margin-top: 12px;
     }
 
+
+
+    .host-auth-box {
+      margin-bottom: 14px;
+      padding: 14px;
+      border-radius: 22px;
+      background: #eef2ff;
+      border: 3px solid #c7d2fe;
+      color: #312e81;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+    }
+
+    .host-auth-box strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .host-auth-status {
+      font-size: 14px;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -579,6 +604,13 @@
       </section>
 
       <aside class="side-card">
+        <div class="host-auth-box" id="hostAuthBox">
+          <strong>👩‍🏫 Profesor</strong>
+          <div class="host-auth-status" id="hostAuthStatus">Sin iniciar sesión.</div>
+          <button class="btn secondary small" id="teacherLoginBtn">Iniciar con Google</button>
+          <button class="btn danger small hidden" id="teacherLogoutBtn" style="margin-top: 10px;">Cerrar sesión</button>
+        </div>
+
         <button class="btn danger small hidden" id="cancelGameBtn">Cancelar partida 🛑</button>
 
         <h3 style="margin-top: 18px;">🏆 Ranking</h3>
@@ -616,6 +648,7 @@
     const QUESTION_SECONDS = 20;
     const FINISHED_CLEANUP_DELAY_MS = 30000;
     const AUTO_NEXT_DELAY_MS = 1500;
+    const ALLOWED_HOST_EMAIL = "rafgim36@gmail.com";
 
     /************************************************************
      * IMPORTS DE FIREBASE
@@ -638,10 +671,19 @@
       getFunctions,
       httpsCallable
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const functions = getFunctions(app, FUNCTIONS_REGION);
+    const auth = getAuth(app);
+    const googleProvider = new GoogleAuthProvider();
 
     const roomRef = doc(db, "trivialRooms", ROOM_ID);
     const playersRef = collection(db, "trivialRooms", ROOM_ID, "players");
@@ -649,6 +691,8 @@
     let playerId = localStorage.getItem("trivial_player_id") || null;
     let playerName = localStorage.getItem("trivial_player_name") || "";
     let isHost = false;
+    let currentUser = null;
+    let isAllowedHostAccount = false;
     let room = null;
     let players = [];
     let myPlayer = null;
@@ -687,6 +731,8 @@
     $("nextQuestionBtn").addEventListener("click", nextQuestion);
     $("resetGameBtn").addEventListener("click", resetGame);
     $("cancelGameBtn").addEventListener("click", cancelGame);
+    $("teacherLoginBtn").addEventListener("click", teacherLogin);
+    $("teacherLogoutBtn").addEventListener("click", teacherLogout);
 
     $("playerName").addEventListener("keydown", (ev) => {
       if (ev.key === "Enter") joinGame();
@@ -697,6 +743,15 @@
      ************************************************************/
     async function init() {
       $("playerName").value = playerName;
+
+      onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        isAllowedHostAccount = Boolean(user?.email && user.email.toLowerCase() === ALLOWED_HOST_EMAIL.toLowerCase());
+        updateHostAuthBox();
+        await claimHostIfAllowed();
+        renderByStatus();
+      });
+
       await ensureRoomExists();
       listenRoom();
       listenPlayers();
@@ -715,9 +770,11 @@
         room = snap.data();
         if (!room) return;
 
-        isHost = Boolean(playerId && room.hostId === playerId);
+        isHost = Boolean(playerId && room.hostId === playerId && isAllowedHostAccount);
         updateRoomStatus();
         renderByStatus();
+        updateHostAuthBox();
+        claimHostIfAllowed();
         maybeAutoAdvanceQuestion();
       });
     }
@@ -731,8 +788,68 @@
         renderPlayers();
         renderRanking();
         renderByStatus();
+        claimHostIfAllowed();
         maybeAutoAdvanceQuestion();
       });
+    }
+
+    /************************************************************
+     * ACCESO DEL PROFESOR
+     ************************************************************/
+    async function teacherLogin() {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (error) {
+        console.error(error);
+        alert("No se ha podido iniciar sesión con Google.");
+      }
+    }
+
+    async function teacherLogout() {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function claimHostIfAllowed() {
+      if (!isAllowedHostAccount || !playerId || !room) return;
+      if (room.hostId && room.hostId !== playerId) return;
+      if (room.hostId === playerId) return;
+
+      try {
+        await updateDoc(roomRef, {
+          hostId: playerId,
+          updatedAt: serverTimestamp()
+        });
+      } catch (error) {
+        console.error("No se ha podido asignar el profesor como host:", error);
+      }
+    }
+
+    function updateHostAuthBox() {
+      const status = $("hostAuthStatus");
+      const loginBtn = $("teacherLoginBtn");
+      const logoutBtn = $("teacherLogoutBtn");
+      if (!status || !loginBtn || !logoutBtn) return;
+
+      if (!currentUser) {
+        status.textContent = "Para crear preguntas, inicia sesión con la cuenta del profesor.";
+        loginBtn.classList.remove("hidden");
+        logoutBtn.classList.add("hidden");
+        return;
+      }
+
+      if (isAllowedHostAccount) {
+        status.textContent = `Sesión autorizada: ${currentUser.email}`;
+        loginBtn.classList.add("hidden");
+        logoutBtn.classList.remove("hidden");
+      } else {
+        status.textContent = `Cuenta no autorizada: ${currentUser.email}. Solo ${ALLOWED_HOST_EMAIL} puede crear partidas.`;
+        loginBtn.classList.add("hidden");
+        logoutBtn.classList.remove("hidden");
+      }
     }
 
     /************************************************************
@@ -754,7 +871,7 @@
       }
 
       const currentRoom = (await getDoc(roomRef)).data();
-      const shouldBecomeHost = !currentRoom?.hostId;
+      const shouldBecomeHost = !currentRoom?.hostId && isAllowedHostAccount;
 
       await setDoc(doc(playersRef, playerId), {
         name: playerName,
@@ -778,7 +895,10 @@
      * CONFIGURACIÓN DEL HOST
      ************************************************************/
     async function saveSetup() {
-      if (!isHost) return;
+      if (!isHost) {
+        alert("Solo la cuenta autorizada puede configurar la partida.");
+        return;
+      }
 
       const topic = $("topicInput").value.trim();
       const questionCount = Number($("questionCount").value);
@@ -800,7 +920,10 @@
     }
 
     async function startGame() {
-      if (!isHost || !room?.topic) return;
+      if (!isHost || !room?.topic) {
+        alert("Solo la cuenta autorizada puede generar preguntas y empezar la partida.");
+        return;
+      }
       if (players.length === 0) {
         alert("Todavía no hay jugadores.");
         return;
@@ -1063,7 +1186,7 @@
           $("questionCount").value = String(room.questionCount || 10);
         } else {
           showScreen("waiting");
-          $("waitingText").textContent = "El creador está eligiendo la temática.";
+          $("waitingText").textContent = room.hostId ? "El profesor está eligiendo la temática." : "Esperando a que el profesor inicie sesión y cree la partida.";
         }
       }
 
@@ -1367,11 +1490,11 @@
 
           if (!question || correctIndex < 0 || correctIndex > 3) return null;
 
-          return {
+          return shuffleAnswerOptions({
             question,
             options: options.map(o => String(o).trim()).slice(0, 4),
             correctIndex
-          };
+          });
         })
         .filter(Boolean);
     }
@@ -1388,6 +1511,31 @@
       }
 
       return unique;
+    }
+
+    function shuffleAnswerOptions(question) {
+      const originalOptions = Array.isArray(question.options) ? question.options : [];
+      const originalCorrectIndex = Number(question.correctIndex);
+
+      if (originalOptions.length !== 4 || originalCorrectIndex < 0 || originalCorrectIndex > 3) {
+        return question;
+      }
+
+      const correctOption = originalOptions[originalCorrectIndex];
+      const indexedOptions = originalOptions.map((option, index) => ({ option, index }));
+
+      for (let i = indexedOptions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indexedOptions[i], indexedOptions[j]] = [indexedOptions[j], indexedOptions[i]];
+      }
+
+      const newCorrectIndex = indexedOptions.findIndex(item => item.index === originalCorrectIndex);
+
+      return {
+        ...question,
+        options: indexedOptions.map(item => item.option),
+        correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : originalCorrectIndex
+      };
     }
 
     function normalizeTextForComparison(text) {
