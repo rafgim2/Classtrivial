@@ -1366,7 +1366,7 @@
           <p class="subtitle">Clasificación final</p>
           <div class="big-score" id="winnerName">🏆</div>
           <div class="final-ranking-section hidden" id="finalRankingSection">
-            <h2 id="rankingTitle" style="display: none;">🏆 Ranking final</h2>
+            <h2 id="rankingTitle" style="display: block;">🏆 Ranking final</h2>
             <div class="final-ranking-list" id="finalRankingList"></div>
           </div>
           <div class="notice">La sala se limpiará automáticamente en unos segundos para poder empezar una nueva partida.</div>
@@ -3367,6 +3367,33 @@
   }
 
   // Call the functions to adjust button and ranking when the game starts
+  moveCancelGameButtonBelowRanking();
+  showCancelGameButtonForTeacher();
+</script>
+
+<script>
+  // Ensure the cancel button appears below the ranking once the game starts
+  function moveCancelGameButtonBelowRanking() {
+    const cancelGameButton = document.getElementById('cancelGameBtn');
+    const rankingSection = document.getElementById('rankingSection');
+    
+    // Condition when the game has started
+    if (/* condition for game start */) {
+      // Move the cancel button below the ranking section
+      rankingSection.appendChild(cancelGameButton);
+    }
+  }
+
+  // Function to show the cancel game button for the teacher
+  function showCancelGameButtonForTeacher() {
+    const cancelGameButton = document.getElementById('cancelGameBtn');
+    // Ensure the button is visible once the game starts
+    if (/* condition for teacher to be in game */) {
+      cancelGameButton.style.display = 'inline-block';  // Show the button for the teacher
+    }
+  }
+
+  // Call the functions when the game starts
   moveCancelGameButtonBelowRanking();
   showCancelGameButtonForTeacher();
 </script>
