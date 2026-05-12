@@ -310,6 +310,376 @@
       background: #fef9c3;
     }
 
+
+    .ranking-list,
+    .final-ranking-list {
+      position: relative;
+    }
+
+    .ranking-list .player-chip,
+    .final-ranking-list .player-chip {
+      will-change: transform;
+      transition: transform 0.55s cubic-bezier(.2, .9, .2, 1),
+                  box-shadow 0.25s ease,
+                  background 0.25s ease,
+                  border-color 0.25s ease;
+    }
+
+    .player-chip.rank-moving {
+      z-index: 3;
+      box-shadow: 0 18px 36px rgba(0,0,0,0.22);
+    }
+
+    .player-chip.score-bump {
+      background: #fef9c3;
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 6px rgba(250,204,21,0.24), 0 12px 26px rgba(0,0,0,0.16);
+    }
+
+    .score-value {
+      display: inline-block;
+      min-width: 3ch;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .player-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .player-avatar {
+      display: inline-grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      border-radius: 16px;
+      background: #fef3c7;
+      border: 3px solid white;
+      box-shadow: 0 5px 12px rgba(0,0,0,0.12);
+      font-size: 26px;
+    }
+
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .avatar-btn {
+      border: 4px solid #e5e7eb;
+      background: white;
+      border-radius: 20px;
+      min-height: 66px;
+      font-size: 36px;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.10);
+      transition: transform 0.08s, border-color 0.15s, background 0.15s;
+    }
+
+    .avatar-btn:active {
+      transform: translateY(5px);
+    }
+
+    .avatar-btn.selected {
+      border-color: var(--yellow);
+      background: #fef9c3;
+      box-shadow: 0 0 0 5px rgba(250,204,21,0.28), 0 8px 16px rgba(0,0,0,0.10);
+    }
+
+    .side-section.hidden {
+      display: none !important;
+    }
+
+    .layout.host-ranking-mode {
+      grid-template-columns: 1fr minmax(420px, 560px);
+    }
+
+    .layout.host-ranking-mode .side-card {
+      padding: 24px;
+    }
+
+    .layout.host-ranking-mode #rankingSection h3 {
+      font-size: clamp(34px, 4vw, 54px);
+      text-align: center;
+      margin: 8px 0 18px;
+    }
+
+    .layout.host-ranking-mode #rankingList {
+      gap: 16px;
+    }
+
+    .layout.host-ranking-mode #rankingList .player-chip {
+      font-size: clamp(26px, 2.8vw, 42px);
+      padding: 20px 22px;
+      border-radius: 28px;
+      border-width: 5px;
+    }
+
+    .layout.host-ranking-mode #rankingList .rank-number {
+      width: 58px;
+      height: 58px;
+      border-radius: 20px;
+      font-size: 30px;
+      margin-right: 2px;
+    }
+
+    .layout.host-ranking-mode #rankingList .player-avatar {
+      width: 62px;
+      height: 62px;
+      border-radius: 22px;
+      font-size: 40px;
+    }
+
+    .teacher-observer-note {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border-radius: 24px;
+      background: #eef2ff;
+      color: #312e81;
+      border: 4px solid #c7d2fe;
+      text-align: center;
+      font-size: clamp(20px, 2.5vw, 30px);
+      font-weight: 1000;
+    }
+
+    .final-ranking-section {
+      margin-top: 26px;
+      padding: clamp(18px, 3vw, 30px);
+      border-radius: 34px;
+      background: linear-gradient(135deg, #fff7ed, #fef3c7);
+      border: 5px solid white;
+      box-shadow: inset 0 0 0 3px rgba(250,204,21,0.35), 0 14px 26px rgba(0,0,0,0.12);
+    }
+
+    .final-ranking-section h2 {
+      text-align: center;
+      font-size: clamp(38px, 6vw, 78px);
+      margin-bottom: 22px;
+    }
+
+    .final-ranking-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .final-ranking-list .player-chip {
+      font-size: clamp(28px, 4vw, 58px);
+      padding: 22px 26px;
+      border-radius: 32px;
+      border-width: 5px;
+    }
+
+    .final-ranking-list .rank-number {
+      width: 68px;
+      height: 68px;
+      border-radius: 24px;
+      font-size: 36px;
+      margin-right: 4px;
+    }
+
+    .final-ranking-list .player-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 26px;
+      font-size: 46px;
+    }
+
+
+
+    body.teacher-playing-mode .app {
+      width: min(1640px, calc(100% - 28px));
+      padding-top: 14px;
+    }
+
+    body.teacher-playing-mode .topbar {
+      display: none;
+    }
+
+    body.teacher-playing-mode .layout {
+      grid-template-columns: minmax(0, 1.08fr) minmax(430px, 0.92fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    body.teacher-playing-mode .card,
+    body.teacher-playing-mode .side-card {
+      min-height: calc(100vh - 28px);
+    }
+
+    body.teacher-playing-mode .card {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    body.teacher-playing-mode #screenGame {
+      min-height: auto;
+    }
+
+    body.teacher-playing-mode .side-card {
+      position: static;
+      display: flex;
+      flex-direction: column;
+      padding: clamp(18px, 2vw, 30px);
+    }
+
+    body.teacher-playing-mode #hostAuthBox,
+    body.teacher-playing-mode #leaveRoomBtn,
+    body.teacher-playing-mode #playersSection,
+    body.teacher-playing-mode .small-note,
+    body.teacher-playing-mode .copyright-note {
+      display: none !important;
+    }
+
+    body.teacher-playing-mode #cancelGameBtn:not(.hidden) {
+      display: block;
+      width: auto;
+      align-self: flex-end;
+      margin-bottom: 18px;
+      padding: 14px 20px;
+      font-size: clamp(18px, 1.4vw, 24px);
+      border-radius: 20px;
+    }
+
+    body.teacher-playing-mode #rankingSection {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+    }
+
+    body.teacher-playing-mode #rankingSection h3 {
+      font-size: clamp(42px, 4vw, 70px);
+      text-align: center;
+      margin: 0 0 22px;
+    }
+
+    body.teacher-playing-mode #rankingList {
+      gap: 18px;
+      flex: 1;
+      align-content: start;
+    }
+
+    body.teacher-playing-mode #rankingList .player-chip {
+      font-size: clamp(30px, 3.1vw, 54px);
+      padding: clamp(20px, 2vw, 30px);
+      border-radius: 32px;
+      border-width: 5px;
+    }
+
+    body.teacher-playing-mode #rankingList .rank-number {
+      width: clamp(58px, 4.5vw, 82px);
+      height: clamp(58px, 4.5vw, 82px);
+      border-radius: 24px;
+      font-size: clamp(30px, 2.8vw, 46px);
+    }
+
+    body.teacher-playing-mode #rankingList .player-avatar {
+      width: clamp(62px, 5vw, 90px);
+      height: clamp(62px, 5vw, 90px);
+      border-radius: 26px;
+      font-size: clamp(40px, 3.4vw, 58px);
+    }
+
+    body.teacher-playing-mode .question-text {
+      font-size: clamp(42px, 5vw, 82px);
+    }
+
+    body.teacher-playing-mode .answer {
+      min-height: clamp(110px, 13vh, 170px);
+      font-size: clamp(28px, 3vw, 48px);
+    }
+
+    body.teacher-playing-mode #nextQuestionBtn {
+      font-size: clamp(26px, 2.6vw, 42px);
+      padding: 22px 28px;
+      border-radius: 28px;
+    }
+
+
+    body.teacher-final-mode .app {
+      width: min(1320px, calc(100% - 28px));
+      padding-top: 14px;
+    }
+
+    body.teacher-final-mode .topbar {
+      display: none;
+    }
+
+    body.teacher-final-mode .layout {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    body.teacher-final-mode .side-card {
+      display: none !important;
+    }
+
+    body.teacher-final-mode .card {
+      min-height: calc(100vh - 28px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(22px, 3vw, 46px);
+    }
+
+    body.teacher-final-mode #screenFinished {
+      min-height: auto;
+    }
+
+    body.teacher-final-mode #screenFinished h1 {
+      text-align: center;
+      font-size: clamp(54px, 7vw, 110px);
+    }
+
+    body.teacher-final-mode #screenFinished .subtitle {
+      text-align: center;
+      font-size: clamp(26px, 3vw, 46px);
+    }
+
+    body.teacher-final-mode .big-score {
+      font-size: clamp(70px, 9vw, 140px);
+    }
+
+    body.teacher-final-mode .final-ranking-section {
+      margin: 28px auto;
+      width: min(1100px, 100%);
+    }
+
+    body.teacher-final-mode .final-ranking-list .player-chip {
+      font-size: clamp(34px, 4.5vw, 70px);
+      padding: 24px 30px;
+    }
+
+    body.teacher-final-mode #resetGameBtn {
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1000px) {
+      body.teacher-playing-mode .layout {
+        grid-template-columns: 1fr;
+      }
+
+      body.teacher-playing-mode .card,
+      body.teacher-playing-mode .side-card {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout.host-ranking-mode { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .avatar-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
     .rank-number {
       display: inline-grid;
       place-items: center;
@@ -418,6 +788,33 @@
     .answer.disabled {
       pointer-events: none;
       opacity: 0.58;
+    }
+
+    .answer.teacher-view {
+      pointer-events: none;
+      cursor: default;
+    }
+
+    .answer.teacher-view:hover {
+      filter: none;
+    }
+
+    .player-chip.answer-correct {
+      background: #dcfce7;
+      border-color: #86efac;
+      box-shadow: 0 0 0 5px rgba(34,197,94,0.18), 0 10px 24px rgba(0,0,0,0.12);
+    }
+
+    .player-chip.answer-wrong {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      box-shadow: 0 0 0 5px rgba(239,68,68,0.16), 0 10px 24px rgba(0,0,0,0.12);
+    }
+
+    .player-chip.answer-correct.score-bump {
+      background: #bbf7d0;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 7px rgba(34,197,94,0.22), 0 14px 30px rgba(0,0,0,0.18);
     }
 
     .answer.correct {
@@ -878,13 +1275,17 @@
 
         <div id="screenJoin" class="screen">
           <h1>¡Entra al trivial!</h1>
-          <p class="subtitle">Escribe tu nombre para unirte a la partida de clase.</p>
+          <p class="subtitle">Escribe tu nombre y elige un monigote para unirte a la partida de clase.</p>
           <div class="room-code-badge hidden" id="joinRoomCodeBadge">----</div>
 
           <div class="form-grid">
             <div>
               <label for="playerName">Tu nombre</label>
               <input id="playerName" maxlength="22" placeholder="Ejemplo: Lucía" autocomplete="off" />
+            </div>
+            <div>
+              <label>Elige tu monigote</label>
+              <div class="avatar-grid" id="avatarGrid"></div>
             </div>
           </div>
 
@@ -964,6 +1365,10 @@
           <h1>¡Partida terminada!</h1>
           <p class="subtitle">Clasificación final</p>
           <div class="big-score" id="winnerName">🏆</div>
+          <div class="final-ranking-section hidden" id="finalRankingSection">
+            <h2 style="display: none;"><span style="display: none;">🏆 Ranking</span> final</h2>
+            <div class="final-ranking-list" id="finalRankingList"></div>
+          </div>
           <div class="notice">La sala se limpiará automáticamente en unos segundos para poder empezar una nueva partida.</div>
           <button class="btn danger hidden" id="resetGameBtn">Crear nueva partida 🔄</button>
         </div>
@@ -980,11 +1385,15 @@
         <button class="btn danger small hidden" id="cancelGameBtn">Cancelar partida 🛑</button>
         <button class="btn secondary small hidden" id="leaveRoomBtn" style="margin-top: 10px;">Salir de la sala 🚪</button>
 
-        <h3 style="margin-top: 18px;">🏆 Ranking</h3>
-        <div class="ranking-list" id="rankingList"></div>
+        <div class="side-section" id="rankingSection">
+          <h3 style="margin-top: 18px;"><span style="display: none;">🏆 Ranking</span></h3>
+          <div class="ranking-list" id="rankingList"></div>
+        </div>
 
-        <h3 style="margin-top: 24px;">👥 Jugadores</h3>
-        <div class="players-list" id="playersList"></div>
+        <div class="side-section" id="playersSection">
+          <h3 style="margin-top: 24px;">👥 Jugadores</h3>
+          <div class="players-list" id="playersList"></div>
+        </div>
 
         <p class="small-note">
           Sala actual: <strong id="sideRoomCode">—</strong>. 
@@ -1029,7 +1438,7 @@
      ************************************************************/
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
-      getFirestore,
+      initializeFirestore,
       doc,
       collection,
       getDoc,
@@ -1049,12 +1458,22 @@
       getAuth,
       GoogleAuthProvider,
       signInWithPopup,
+      signInWithRedirect,
+      getRedirectResult,
       signOut,
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+
+    // iOS/Safari puede quedarse muy lento con el transporte en tiempo real por defecto
+    // de Firestore. Esta configuración permite cambiar automáticamente a long polling
+    // y evita bloqueos típicos al hacer getDoc/onSnapshot desde iPhone/iPad.
+    const db = initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+      useFetchStreams: false
+    });
+
     const functions = getFunctions(app, FUNCTIONS_REGION);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
@@ -1062,8 +1481,16 @@
     let roomRef = null;
     let playersRef = null;
 
-    let playerId = localStorage.getItem("trivial_player_id") || null;
-    let playerName = localStorage.getItem("trivial_player_name") || "";
+    const PLAYER_AVATARS = [
+      "😀", "😎", "🤓", "🥳", "🤠",
+      "🦊", "🐼", "🐸", "🐵", "🐯",
+      "🦁", "🐱", "🐶", "🐰", "🐧",
+      "🦄", "🐲", "🤖", "👽", "🧙"
+    ];
+
+    let playerId = safeStorageGet("trivial_player_id") || null;
+    let playerName = safeStorageGet("trivial_player_name") || "";
+    let selectedAvatar = safeStorageGet("trivial_player_avatar") || PLAYER_AVATARS[0];
     let isHost = false;
     let currentUser = null;
     let isAllowedHostAccount = false;
@@ -1076,6 +1503,10 @@
     let cleanupScheduled = false;
     let winnerCelebrationShownFor = "";
     let loserEncouragementShownFor = "";
+    let hostWinnerMusicShownFor = "";
+    const displayedRankingScores = new Map();
+    const rankingScoreAnimations = new Map();
+    let rankingRenderToken = 0;
     let unsubscribeRoom = null;
     let unsubscribePlayers = null;
 
@@ -1136,6 +1567,14 @@
     async function init() {
       $("playerName").value = playerName;
       $("roomCodeInput").value = roomCode;
+      renderAvatarChoices();
+      updateSidePanelVisibility();
+
+      // Necesario si en iOS/Safari el inicio con Google se hace por redirección.
+      getRedirectResult(auth).catch((error) => {
+        console.error("Error recuperando login por redirección:", error);
+      });
+
       onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         isAllowedHostAccount = Boolean(user?.email && user.email.toLowerCase() === ALLOWED_HOST_EMAIL.toLowerCase());
@@ -1146,7 +1585,13 @@
       });
 
       if (roomCode) {
-        await selectRoom(roomCode, { checkExists: true, silentIfMissing: true });
+        try {
+          await selectRoom(roomCode, { checkExists: true, silentIfMissing: true });
+        } catch (error) {
+          console.error("Error abriendo la sala desde la URL:", error);
+          showScreen("room");
+          showNotice("roomNotice", "No se ha podido conectar con la sala. Recarga la página o vuelve a escribir el código.");
+        }
       } else {
         showScreen("room");
         updateRoomStatus();
@@ -1157,7 +1602,11 @@
 
     async function ensureRoomExists() {
       if (!roomRef) return;
-      const snap = await getDoc(roomRef);
+      const snap = await withTimeout(
+        getDoc(roomRef),
+        12000,
+        "Tiempo agotado comprobando la sala."
+      );
       if (!snap.exists()) {
         await resetRoomDocument();
       }
@@ -1180,7 +1629,21 @@
       }
 
       const candidateRef = doc(db, "trivialRooms", normalized);
-      const snap = await getDoc(candidateRef);
+      let snap;
+
+      try {
+        snap = await withTimeout(
+          getDoc(candidateRef),
+          12000,
+          "Tiempo agotado comprobando la sala."
+        );
+      } catch (error) {
+        console.error("Error comprobando sala:", error);
+        if (!silentIfMissing) {
+          showNotice("roomNotice", "No se ha podido conectar con la sala. En iPhone/iPad prueba Safari sin modo privado, recarga la página o revisa la conexión.");
+        }
+        return false;
+      }
 
       if (checkExists && !snap.exists()) {
         if (!silentIfMissing) showNotice("roomNotice", "Esta sala ya no existe o el enlace no es correcto. Pide al profesor un enlace nuevo.");
@@ -1199,6 +1662,7 @@
       cleanupScheduled = false;
       winnerCelebrationShownFor = "";
       loserEncouragementShownFor = "";
+      hostWinnerMusicShownFor = "";
       hideWinnerCelebration();
       hideLoserEncouragement();
       clearAutoAdvance();
@@ -1207,7 +1671,15 @@
       $("roomCodeInput").value = normalized;
       hideNotice("roomNotice");
       updateRoomCodeBadge();
-      await ensureRoomExists();
+      try {
+        await ensureRoomExists();
+      } catch (error) {
+        console.error("Error preparando la sala:", error);
+        if (!silentIfMissing) {
+          showNotice("roomNotice", "La sala existe, pero no se ha podido preparar la conexión. Recarga y vuelve a intentarlo.");
+        }
+        return false;
+      }
       listenRoom();
       listenPlayers();
       return true;
@@ -1216,9 +1688,25 @@
 
     async function joinExistingRoom() {
       const code = $("roomCodeInput").value.trim();
-      const ok = await selectRoom(code, { checkExists: true });
-      if (ok) {
-        showScreen("join");
+      if (!normalizeRoomCode(code)) {
+        showNotice("roomNotice", "Escribe el código de sala que te ha dado el profesor.");
+        return;
+      }
+
+      $("joinRoomBtn").disabled = true;
+      showNotice("roomNotice", "Comprobando sala...");
+
+      try {
+        const ok = await selectRoom(code, { checkExists: true });
+        if (ok) {
+          hideNotice("roomNotice");
+          showScreen("join");
+        }
+      } catch (error) {
+        console.error("Error entrando en sala:", error);
+        showNotice("roomNotice", "No se ha podido entrar en la sala. En iPhone/iPad prueba recargar la página o desactivar el modo privado.");
+      } finally {
+        $("joinRoomBtn").disabled = false;
       }
     }
 
@@ -1251,6 +1739,7 @@
       cleanupScheduled = false;
       winnerCelebrationShownFor = "";
       loserEncouragementShownFor = "";
+      hostWinnerMusicShownFor = "";
 
       setupRoomRefs(code);
       $("roomCodeInput").value = code;
@@ -1262,9 +1751,11 @@
         hostUid: currentUser?.uid || ""
       });
 
+      await ensureHostPlayer();
+
       listenRoom();
       listenPlayers();
-      showScreen("join");
+      showScreen("setup");
     }
 
     async function generateUniqueRoomCode() {
@@ -1290,7 +1781,7 @@
       room = null;
       players = [];
       myPlayer = null;
-      localStorage.removeItem("trivial_player_id");
+      safeStorageRemove("trivial_player_id");
       playerId = null;
       updateUrlRoomCode("");
       updateSideRoomCode();
@@ -1313,6 +1804,9 @@
         updateHostAuthBox();
         claimHostIfAllowed();
         maybeAutoAdvanceQuestion();
+      }, (error) => {
+        console.error("Error escuchando la sala:", error);
+        showNotice("roomNotice", "Se ha perdido la conexión con la sala. Recarga la página si no se actualiza.");
       });
     }
 
@@ -1328,6 +1822,8 @@
         renderByStatus();
         claimHostIfAllowed();
         maybeAutoAdvanceQuestion();
+      }, (error) => {
+        console.error("Error escuchando jugadores:", error);
       });
     }
 
@@ -1336,10 +1832,22 @@
      ************************************************************/
     async function teacherLogin() {
       try {
+        if (isIOSDevice()) {
+          await signInWithRedirect(auth, googleProvider);
+          return;
+        }
+
         await signInWithPopup(auth, googleProvider);
       } catch (error) {
         console.error(error);
-        alert("No se ha podido iniciar sesión con Google.");
+
+        // En algunos Safari/iOS el popup falla o se bloquea. Probamos redirección.
+        try {
+          await signInWithRedirect(auth, googleProvider);
+        } catch (redirectError) {
+          console.error(redirectError);
+          alert("No se ha podido iniciar sesión con Google.");
+        }
       }
     }
 
@@ -1352,20 +1860,63 @@
     }
 
     async function claimHostIfAllowed() {
-      // Si la cuenta autorizada ha iniciado sesión, este dispositivo debe tomar
-      // el control de la partida aunque antes hubiera entrado otro jugador.
-      // Así los alumnos nunca se quedan como creadores por accidente.
-      if (!isAllowedHostAccount || !playerId || !room || !roomRef) return;
+      // Si la cuenta autorizada ha iniciado sesión, este dispositivo toma
+      // el control sin pedir nombre al profesor.
+      if (!isAllowedHostAccount || !room || !roomRef || !playersRef) return;
+
+      if (!playerId || !myPlayer?.isTeacher) {
+        await ensureHostPlayer();
+      }
+
       if (room.hostId === playerId) return;
 
       try {
         await updateDoc(roomRef, {
           hostId: playerId,
+          hostUid: currentUser?.uid || room.hostUid || "",
+          hostEmail: currentUser?.email || room.hostEmail || "",
           updatedAt: serverTimestamp()
         });
       } catch (error) {
         console.error("No se ha podido asignar el profesor como host:", error);
       }
+    }
+
+    async function ensureHostPlayer() {
+      if (!isAllowedHostAccount || !roomRef || !playersRef) return;
+
+      if (!playerId) {
+        playerId = "host_" + makeId();
+        safeStorageSet("trivial_player_id", playerId);
+      }
+
+      playerName = "Profesor";
+
+      await setDoc(doc(playersRef, playerId), {
+        name: "Profesor",
+        avatar: "👩‍🏫",
+        isTeacher: true,
+        score: 0,
+        joinedAt: serverTimestamp(),
+        answers: {},
+        lastSeen: serverTimestamp()
+      }, { merge: true });
+
+      await updateDoc(roomRef, {
+        hostId: playerId,
+        hostUid: currentUser?.uid || room?.hostUid || "",
+        hostEmail: currentUser?.email || room?.hostEmail || "",
+        updatedAt: serverTimestamp()
+      });
+
+      myPlayer = {
+        id: playerId,
+        name: "Profesor",
+        avatar: "👩‍🏫",
+        isTeacher: true,
+        score: 0,
+        answers: {}
+      };
     }
 
     function updateHostAuthBox() {
@@ -1426,37 +1977,41 @@
         return;
       }
 
+      // El profesor autorizado entra automáticamente como host, sin pedir nombre.
+      if (isAllowedHostAccount) {
+        await ensureHostPlayer();
+        renderByStatus();
+        return;
+      }
+
       const name = $("playerName").value.trim();
       if (!name) {
         showNotice("joinNotice", "Escribe tu nombre antes de entrar 😊");
         return;
       }
 
-      playerName = name;
-      localStorage.setItem("trivial_player_name", playerName);
-
-      if (!playerId) {
-        playerId = "player_" + crypto.randomUUID();
-        localStorage.setItem("trivial_player_id", playerId);
+      if (!PLAYER_AVATARS.includes(selectedAvatar)) {
+        selectedAvatar = PLAYER_AVATARS[0];
       }
 
-      const currentRoom = (await getDoc(roomRef)).data();
-      const shouldBecomeHost = isAllowedHostAccount && (!currentRoom?.hostUid || currentRoom.hostUid === currentUser?.uid || currentRoom.hostEmail === currentUser?.email);
+      playerName = name;
+      safeStorageSet("trivial_player_name", playerName);
+      safeStorageSet("trivial_player_avatar", selectedAvatar);
+
+      if (!playerId || String(playerId).startsWith("host_")) {
+        playerId = "player_" + makeId();
+        safeStorageSet("trivial_player_id", playerId);
+      }
 
       await setDoc(doc(playersRef, playerId), {
         name: playerName,
+        avatar: selectedAvatar,
+        isTeacher: false,
         score: 0,
         joinedAt: serverTimestamp(),
         answers: {},
         lastSeen: serverTimestamp()
       }, { merge: true });
-
-      if (shouldBecomeHost) {
-        await updateDoc(roomRef, {
-          hostId: playerId,
-          updatedAt: serverTimestamp()
-        });
-      }
 
       renderByStatus();
     }
@@ -1499,12 +2054,12 @@
         alert("Solo la cuenta autorizada puede generar preguntas y empezar la partida.");
         return;
       }
-      if (players.length === 0) {
-        alert("Todavía no hay jugadores.");
+      if (getStudentPlayers().length === 0) {
+        alert("Todavía no hay alumnos conectados.");
         return;
       }
 
-      const generationId = crypto.randomUUID();
+      const generationId = makeId();
 
       try {
         startHostMusic();
@@ -1595,6 +2150,7 @@
       $("topicBadge").textContent = room.topic || "Trivial";
       $("questionText").textContent = question.question;
 
+      const isTeacherObserver = Boolean(isHost || myPlayer?.isTeacher);
       const myAnswers = myPlayer?.answers || {};
       const answerKey = String(index);
       const alreadyAnswered = Boolean(myAnswers[answerKey]);
@@ -1610,9 +2166,18 @@
         const btn = document.createElement("button");
         btn.className = "answer";
         btn.innerHTML = `<span>${letter(optionIndex)}.</span> ${escapeHtml(option)}`;
-        btn.onclick = () => answerQuestion(optionIndex);
 
-        if (alreadyAnswered) {
+        if (isTeacherObserver) {
+          // Pantalla del profesor: las respuestas se ven normales, sin sombreado
+          // ni pista visual de cuál es correcta, pero no se pueden pulsar.
+          btn.classList.add("teacher-view");
+          btn.setAttribute("aria-disabled", "true");
+          btn.setAttribute("tabindex", "-1");
+        } else {
+          btn.onclick = () => answerQuestion(optionIndex);
+        }
+
+        if (!isTeacherObserver && alreadyAnswered) {
           btn.classList.add("disabled");
           if (optionIndex === question.correctIndex) btn.classList.add("correct");
           if (myAnswers[answerKey].selectedIndex === optionIndex && !myAnswers[answerKey].correct) btn.classList.add("wrong");
@@ -1621,7 +2186,7 @@
         answersBox.appendChild(btn);
       });
 
-      if (alreadyAnswered) {
+      if (!isTeacherObserver && alreadyAnswered) {
         const answer = myAnswers[answerKey];
         feedback.classList.add("show", answer.correct ? "good" : "bad");
         feedback.textContent = answer.correct
@@ -1637,6 +2202,7 @@
 
     async function answerQuestion(selectedIndex) {
       if (!playerId || !myPlayer || room.status !== "playing") return;
+      if (isHost || myPlayer.isTeacher) return;
 
       const index = room.currentQuestion || 0;
       const question = room.questions[index];
@@ -1702,10 +2268,11 @@
 
       const index = room.currentQuestion || 0;
       const questions = room.questions || [];
-      if (!questions[index] || players.length === 0) return;
+      const studentPlayers = getStudentPlayers();
+      if (!questions[index] || studentPlayers.length === 0) return;
 
       const answerKey = String(index);
-      const allAnswered = players.every(player => Boolean(player.answers?.[answerKey]));
+      const allAnswered = studentPlayers.every(player => Boolean(player.answers?.[answerKey]));
       const timeExpired = getElapsedSeconds() >= QUESTION_SECONDS;
       const currentKey = `${room.generationId || "game"}_${index}`;
 
@@ -1756,6 +2323,7 @@
         showScreen("room");
         updateCancelButton();
         updateSideRoomCode();
+        updateSidePanelVisibility();
         return;
       }
 
@@ -1765,10 +2333,20 @@
       updateSideRoomCode();
       updateLeaveRoomButton();
       updateCancelButton();
+      updateSidePanelVisibility();
+
+      if ((!playerId || !myPlayer) && isAllowedHostAccount) {
+        ensureHostPlayer();
+        return;
+      }
 
       if (!playerId || !myPlayer) {
         stopHostMusic();
+        stopWinnerMusic();
+        hideWinnerCelebration();
         hideLoserEncouragement();
+        winnerCelebrationShownFor = "";
+        loserEncouragementShownFor = "";
         showScreen("join");
         return;
       }
@@ -1782,6 +2360,7 @@
         cleanupScheduled = false;
         winnerCelebrationShownFor = "";
         loserEncouragementShownFor = "";
+        hostWinnerMusicShownFor = "";
 
         if (isHost) {
           showScreen("setup");
@@ -1821,8 +2400,13 @@
         // la animación de ganador salte al siguiente jugador.
         const winner = getStoredWinner();
         $("winnerName").textContent = winner ? `🏆 ${winner.name}` : "🏆";
+        renderFinalRanking();
 
-        if (winner && winner.id === playerId) {
+        if (isHost) {
+          hideWinnerCelebration();
+          hideLoserEncouragement();
+          playWinnerMusicForHost(winner);
+        } else if (winner && winner.id === playerId) {
           hideLoserEncouragement();
           showWinnerCelebration(winner);
         } else if (winner && playerId && myPlayer) {
@@ -1835,6 +2419,7 @@
       }
 
       updateCancelButton();
+      updateSidePanelVisibility();
     }
 
     function showScreen(name) {
@@ -1858,7 +2443,8 @@
         playing: "Partida en marcha",
         finished: "Partida terminada"
       };
-      $("roomStatus").textContent = `Sala ${roomCode} · ${labels[room.status] || "Sala"} · ${players.length} jugadores`;
+      const studentCount = getStudentPlayers().length;
+      $("roomStatus").textContent = `Sala ${roomCode} · ${labels[room.status] || "Sala"} · ${studentCount} ${studentCount === 1 ? "jugador" : "jugadores"}`;
     }
 
     function updateSideRoomCode() {
@@ -1898,9 +2484,14 @@
       $("cancelGameBtn").classList.toggle("hidden", !canCancel);
     }
 
+    function getStudentPlayers() {
+      return players.filter(player => !player.isTeacher);
+    }
+
     function getCurrentWinner() {
-      if (!players.length) return null;
-      return players
+      const studentPlayers = getStudentPlayers();
+      if (!studentPlayers.length) return null;
+      return studentPlayers
         .slice()
         .sort((a, b) => {
           const scoreDiff = (b.score || 0) - (a.score || 0);
@@ -1923,45 +2514,234 @@
     }
 
     function renderPlayers() {
-      $("playersCountBig").textContent = `${players.length} ${players.length === 1 ? "jugador" : "jugadores"}`;
+      const studentPlayers = getStudentPlayers()
+        .slice()
+        .sort((a, b) => (a.joinedAt?.seconds || 0) - (b.joinedAt?.seconds || 0));
+
+      $("playersCountBig").textContent = `${studentPlayers.length} ${studentPlayers.length === 1 ? "jugador" : "jugadores"}`;
 
       const box = $("playersList");
       box.innerHTML = "";
 
-      if (!players.length) {
+      if (!studentPlayers.length) {
         box.innerHTML = `<div class="player-chip">Todavía no hay jugadores</div>`;
         return;
       }
 
-      players
-        .slice()
-        .sort((a, b) => (a.joinedAt?.seconds || 0) - (b.joinedAt?.seconds || 0))
-        .forEach(player => {
-          const div = document.createElement("div");
-          div.className = "player-chip" + (player.id === playerId ? " me" : "");
-          div.innerHTML = `<span>${escapeHtml(player.name)}</span><span>${player.id === room?.hostId ? "👑" : "⭐"}</span>`;
-          box.appendChild(div);
-        });
-    }
-
-    function renderRanking() {
-      const box = $("rankingList");
-      box.innerHTML = "";
-
-      if (!players.length) {
-        box.innerHTML = `<div class="player-chip">Sin puntuaciones</div>`;
-        return;
-      }
-
-      players.forEach((player, index) => {
+      studentPlayers.forEach(player => {
         const div = document.createElement("div");
         div.className = "player-chip" + (player.id === playerId ? " me" : "");
         div.innerHTML = `
-          <span><span class="rank-number">${index + 1}</span>${escapeHtml(player.name)}</span>
-          <span>${player.score || 0}</span>
+          <span class="player-main">
+            <span class="player-avatar">${escapeHtml(player.avatar || "🙂")}</span>
+            <span>${escapeHtml(player.name)}</span>
+          </span>
+          <span>⭐</span>
         `;
         box.appendChild(div);
       });
+    }
+
+    function renderRanking() {
+      const studentPlayers = getStudentPlayers();
+      const box = $("rankingList");
+      renderAnimatedRankingList(box, studentPlayers, { emptyText: "Sin puntuaciones", highlightMe: true });
+    }
+
+    function renderFinalRanking() {
+      const section = $("finalRankingSection");
+      const box = $("finalRankingList");
+      if (!section || !box) return;
+
+      section.classList.toggle("hidden", !isHost);
+      if (!isHost) {
+        box.innerHTML = "";
+        return;
+      }
+
+      const studentPlayers = getStudentPlayers();
+      renderAnimatedRankingList(box, studentPlayers, { emptyText: "Sin puntuaciones", highlightMe: false });
+    }
+
+    function renderAnimatedRankingList(box, rankedPlayers, { emptyText = "Sin puntuaciones", highlightMe = true } = {}) {
+      if (!box) return;
+
+      const oldPositions = captureRankingPositions(box);
+      const renderToken = ++rankingRenderToken;
+      box.innerHTML = "";
+
+      if (!rankedPlayers.length) {
+        box.innerHTML = `<div class="player-chip">${escapeHtml(emptyText)}</div>`;
+        return;
+      }
+
+      rankedPlayers.forEach((player, index) => {
+        const targetScore = Number(player.score || 0);
+        const currentDisplay = getDisplayedScore(player.id, targetScore);
+        const answerClass = getCurrentQuestionAnswerClass(player);
+        const div = document.createElement("div");
+        div.className = "player-chip" + (highlightMe && player.id === playerId ? " me" : "") + (answerClass ? ` ${answerClass}` : "");
+        div.dataset.playerId = player.id;
+        div.innerHTML = `
+          <span class="player-main">
+            <span class="rank-number">${index + 1}</span>
+            <span class="player-avatar">${escapeHtml(player.avatar || "🙂")}</span>
+            <span>${escapeHtml(player.name)}</span>
+          </span>
+          <span class="score-value" data-score-player-id="${escapeHtml(player.id)}">${currentDisplay}</span>
+        `;
+        box.appendChild(div);
+      });
+
+      animateRankingMovement(box, oldPositions);
+
+      rankedPlayers.forEach(player => {
+        const targetScore = Number(player.score || 0);
+        animateDisplayedScore(player.id, targetScore, renderToken);
+      });
+    }
+
+    function getCurrentQuestionAnswerClass(player) {
+      if (!room || room.status !== "playing") return "";
+      const answerKey = String(room.currentQuestion || 0);
+      const answer = player?.answers?.[answerKey];
+      if (!answer) return "";
+      return answer.correct ? "answer-correct" : "answer-wrong";
+    }
+
+    function getDisplayedScore(playerIdValue, targetScore) {
+      if (!displayedRankingScores.has(playerIdValue)) {
+        displayedRankingScores.set(playerIdValue, Number(targetScore || 0));
+      }
+      return displayedRankingScores.get(playerIdValue) || 0;
+    }
+
+    function captureRankingPositions(box) {
+      const positions = new Map();
+      box.querySelectorAll(".player-chip[data-player-id]").forEach(el => {
+        positions.set(el.dataset.playerId, el.getBoundingClientRect());
+      });
+      return positions;
+    }
+
+    function animateRankingMovement(box, oldPositions) {
+      const chips = Array.from(box.querySelectorAll(".player-chip[data-player-id]"));
+      chips.forEach(chip => {
+        const oldBox = oldPositions.get(chip.dataset.playerId);
+        if (!oldBox) return;
+
+        const newBox = chip.getBoundingClientRect();
+        const deltaY = oldBox.top - newBox.top;
+        const deltaX = oldBox.left - newBox.left;
+
+        if (Math.abs(deltaY) < 2 && Math.abs(deltaX) < 2) return;
+
+        chip.classList.add("rank-moving");
+        chip.style.transition = "none";
+        chip.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        chip.getBoundingClientRect();
+
+        requestAnimationFrame(() => {
+          chip.style.transition = "transform 0.65s cubic-bezier(.16, 1, .3, 1), box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease";
+          chip.style.transform = "translate(0, 0)";
+          window.setTimeout(() => {
+            chip.classList.remove("rank-moving");
+            chip.style.transition = "";
+            chip.style.transform = "";
+          }, 700);
+        });
+      });
+    }
+
+    function animateDisplayedScore(playerIdValue, targetScore, renderToken) {
+      const previousAnimation = rankingScoreAnimations.get(playerIdValue);
+      if (previousAnimation) cancelAnimationFrame(previousAnimation);
+
+      const startScore = Number(displayedRankingScores.get(playerIdValue) || 0);
+      targetScore = Number(targetScore || 0);
+
+      if (startScore === targetScore) {
+        updateScoreTexts(playerIdValue, targetScore);
+        return;
+      }
+
+      const delta = targetScore - startScore;
+      const direction = delta >= 0 ? 1 : -1;
+      const distance = Math.abs(delta);
+      const duration = Math.min(1200, Math.max(420, distance * 1.4));
+      const startedAt = performance.now();
+      markScoreBump(playerIdValue);
+
+      const tick = (now) => {
+        const t = Math.min(1, (now - startedAt) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        let value = startScore + direction * Math.floor(distance * eased);
+
+        if (t >= 1) value = targetScore;
+
+        displayedRankingScores.set(playerIdValue, value);
+        updateScoreTexts(playerIdValue, value);
+
+        if (t < 1 && renderToken === rankingRenderToken) {
+          const frame = requestAnimationFrame(tick);
+          rankingScoreAnimations.set(playerIdValue, frame);
+        } else {
+          displayedRankingScores.set(playerIdValue, targetScore);
+          updateScoreTexts(playerIdValue, targetScore);
+          rankingScoreAnimations.delete(playerIdValue);
+        }
+      };
+
+      const frame = requestAnimationFrame(tick);
+      rankingScoreAnimations.set(playerIdValue, frame);
+    }
+
+    function updateScoreTexts(playerIdValue, value) {
+      document.querySelectorAll(`[data-score-player-id="${cssEscape(playerIdValue)}"]`).forEach(el => {
+        el.textContent = String(value);
+      });
+    }
+
+    function markScoreBump(playerIdValue) {
+      document.querySelectorAll(`.player-chip[data-player-id="${cssEscape(playerIdValue)}"]`).forEach(chip => {
+        chip.classList.add("score-bump");
+        window.setTimeout(() => chip.classList.remove("score-bump"), 520);
+      });
+    }
+
+    function cssEscape(value) {
+      if (window.CSS && typeof window.CSS.escape === "function") {
+        return window.CSS.escape(String(value));
+      }
+      return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
+    }
+
+    function updateSidePanelVisibility() {
+      const rankingSection = $("rankingSection");
+      const playersSection = $("playersSection");
+      const layout = document.querySelector(".layout");
+      if (!rankingSection || !playersSection) return;
+
+      const hostRankingMode = Boolean(isHost && room && ["playing", "finished"].includes(room.status));
+      const teacherPlayingMode = Boolean(isHost && room?.status === "playing");
+      const teacherFinalMode = Boolean(isHost && room?.status === "finished");
+      layout?.classList.toggle("host-ranking-mode", hostRankingMode && !teacherFinalMode);
+      layout?.classList.toggle("teacher-playing-layout", teacherPlayingMode);
+      document.body.classList.toggle("teacher-playing-mode", teacherPlayingMode);
+      document.body.classList.toggle("teacher-final-mode", teacherFinalMode);
+
+      if (isHost) {
+        const gameStarted = Boolean(room && ["playing", "finished"].includes(room.status));
+        rankingSection.classList.toggle("hidden", !gameStarted);
+        playersSection.classList.toggle("hidden", gameStarted);
+        return;
+      }
+
+      document.body.classList.remove("teacher-playing-mode");
+      document.body.classList.remove("teacher-final-mode");
+      layout?.classList.remove("teacher-playing-layout");
+      rankingSection.classList.remove("hidden");
+      playersSection.classList.remove("hidden");
     }
 
     /************************************************************
@@ -2020,6 +2800,13 @@
     function stopWinnerMusic() {
       winnerMusic.pause();
       winnerMusic.currentTime = 0;
+    }
+
+    function playWinnerMusicForHost(winner) {
+      const key = `${room?.finishedAt?.seconds || "finished"}_${winner?.id || "sin-ganador"}`;
+      if (hostWinnerMusicShownFor === key) return;
+      hostWinnerMusicShownFor = key;
+      playWinnerMusic();
     }
 
     function showWinnerCelebration(winner) {
@@ -2159,7 +2946,7 @@
 
       if (clearLocalHost) {
         playerId = null;
-        localStorage.removeItem("trivial_player_id");
+        safeStorageRemove("trivial_player_id");
       }
 
       await resetRoomDocument();
@@ -2205,6 +2992,76 @@
     /************************************************************
      * UTILIDADES
      ************************************************************/
+    function renderAvatarChoices() {
+      const grid = $("avatarGrid");
+      if (!grid) return;
+
+      grid.innerHTML = "";
+      PLAYER_AVATARS.forEach((avatar) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "avatar-btn" + (avatar === selectedAvatar ? " selected" : "");
+        btn.textContent = avatar;
+        btn.setAttribute("aria-label", `Elegir avatar ${avatar}`);
+        btn.addEventListener("click", () => selectAvatar(avatar));
+        grid.appendChild(btn);
+      });
+    }
+
+    function selectAvatar(avatar) {
+      selectedAvatar = avatar;
+      safeStorageSet("trivial_player_avatar", selectedAvatar);
+      renderAvatarChoices();
+    }
+
+    function withTimeout(promise, ms, message = "Operación agotada") {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(message)), ms);
+        })
+      ]);
+    }
+
+    function isIOSDevice() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent)
+        || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
+
+    function makeId() {
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+
+      // Fallback para Safari/iOS antiguos.
+      const randomPart = Math.random().toString(36).slice(2);
+      const timePart = Date.now().toString(36);
+      return `${timePart}_${randomPart}`;
+    }
+
+    function safeStorageGet(key) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (error) {
+        console.warn("localStorage no disponible:", error);
+        return null;
+      }
+    }
+
+    function safeStorageSet(key, value) {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch (error) {
+        console.warn("No se ha podido guardar en localStorage:", error);
+      }
+    }
+
+    function safeStorageRemove(key) {
+      try {
+        window.localStorage.removeItem(key);
+      } catch (error) {
+        console.warn("No se ha podido borrar de localStorage:", error);
+      }
+    }
+
     function normalizeQuestions(input) {
       if (!Array.isArray(input)) return [];
 
@@ -2349,3 +3206,23 @@
   </script>
 </body>
 </html>
+
+<script>
+  // Add logic here to show the ranking when required (e.g., after a game finishes)
+  function showRanking() {
+    document.querySelectorAll('.ranking-list, .final-ranking-list').forEach(function(el) {
+      el.style.display = 'block';
+    });
+  }
+
+  // Optionally, you can call showRanking() based on specific events like the game being over
+</script>
+
+<script>
+  // Add logic here to show the ranking when required (e.g., after a game finishes)
+  function showRanking() {
+    document.querySelectorAll('.ranking-list, .final-ranking-list, h2 span').forEach(function(el) {
+      el.style.display = 'block';
+    });
+  }
+</script>
