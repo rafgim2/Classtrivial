@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Trivial IA para clase</title>
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trivial IA para clase</title>
+
+  <style>
     :root {
       --bg1: #7c3aed;
       --bg2: #06b6d4;
@@ -1210,173 +1210,206 @@
     .hidden { display: none !important; }
   </style>
 </head>
+
 <body>
-<div class="confetti" id="confetti"></div>
-<div class="winner-overlay hidden" id="winnerOverlay">
-<div class="winner-card">
-<div class="winner-trophy">🏆</div>
-<div class="winner-title">¡HAS GANADO!</div>
-<div class="winner-player-name" id="winnerOverlayName">Ganador</div>
-<p class="winner-subtitle">¡Fanfarria de campeón!</p>
-<button class="btn secondary winner-close" id="winnerCloseBtn">Cerrar celebración 🎉</button>
-</div>
-</div>
-<div class="loser-overlay hidden" id="loserOverlay">
-<div class="loser-card">
-<div class="loser-icon">👏</div>
-<div class="loser-title">¡Buen intento!</div>
-<p class="loser-message">Sigue practicando y en la próxima ronda puedes ganar.</p>
-<div class="loser-winner-line" id="loserWinnerLine">Ganador: —</div>
-<button class="btn secondary loser-close" id="loserCloseBtn">Cerrar mensaje ⭐</button>
-</div>
-</div>
-<main class="app">
-<header class="topbar">
-<div class="logo">
-<div class="logo-badge">🧠</div>
-<div>CLASS TRIVIAL</div>
-</div>
-<div class="pill" id="roomStatus">Conectando...</div>
-</header>
-<div class="layout">
-<section class="card">
-<div class="screen active" id="screenRoom">
-<h1>Trivial IA</h1>
-<p class="subtitle">Preguntas generadas por IA para competir, aprender y pasarlo bien.</p>
-<div class="notice">
-            👩‍🏫 <strong>Profesor:</strong> inicia sesión con Google y pulsa <strong>Crear sala nueva</strong>. La app generará un código al azar automáticamente.<br/>
+  <div class="confetti" id="confetti"></div>
+
+  <div class="winner-overlay hidden" id="winnerOverlay">
+    <div class="winner-card">
+      <div class="winner-trophy">🏆</div>
+      <div class="winner-title">¡HAS GANADO!</div>
+      <div class="winner-player-name" id="winnerOverlayName">Ganador</div>
+      <p class="winner-subtitle">¡Fanfarria de campeón!</p>
+      <button class="btn secondary winner-close" id="winnerCloseBtn">Cerrar celebración 🎉</button>
+    </div>
+  </div>
+
+
+  <div class="loser-overlay hidden" id="loserOverlay">
+    <div class="loser-card">
+      <div class="loser-icon">👏</div>
+      <div class="loser-title">¡Buen intento!</div>
+      <p class="loser-message">Sigue practicando y en la próxima ronda puedes ganar.</p>
+      <div class="loser-winner-line" id="loserWinnerLine">Ganador: —</div>
+      <button class="btn secondary loser-close" id="loserCloseBtn">Cerrar mensaje ⭐</button>
+    </div>
+  </div>
+
+
+  <main class="app">
+    <header class="topbar">
+      <div class="logo">
+        <div class="logo-badge">🧠</div>
+        <div>CLASS TRIVIAL</div>
+      </div>
+      <div class="pill" id="roomStatus">Conectando...</div>
+    </header>
+
+    <div class="layout">
+      <section class="card">
+
+        <div id="screenRoom" class="screen active">
+          <h1>Trivial IA</h1>
+          <p class="subtitle">Preguntas generadas por IA para competir, aprender y pasarlo bien.</p>
+
+          <div class="notice">
+            👩‍🏫 <strong>Profesor:</strong> inicia sesión con Google y pulsa <strong>Crear sala nueva</strong>. La app generará un código al azar automáticamente.<br>
             👦 <strong>Alumnos:</strong> escriben el código que les dé el profesor y luego ponen su nombre.
           </div>
-<div class="form-grid" id="roomJoinForm">
-<div>
-<label for="roomCodeInput">Código de sala para alumnos</label>
-<input autocomplete="off" id="roomCodeInput" inputmode="numeric" maxlength="8" placeholder="Ejemplo: 482913"/>
-</div>
-</div>
-<div class="room-actions only-join" id="roomActions">
-<button class="btn secondary" id="joinRoomBtn">Entrar en sala 🔑</button>
-<button class="btn warning hidden" id="createRoomBtn">Crear sala nueva ✨</button>
-</div>
-<div class="room-mini" id="studentRoomHint">Si eres alumno, escribe el código de sala que te dé tu profesor.</div>
-<div class="notice hidden" id="roomNotice"></div>
-</div>
-<div class="screen" id="screenJoin">
-<h1>¡Entra al trivial!</h1>
-<p class="subtitle">Escribe tu nombre y elige un monigote para unirte a la partida de clase.</p>
-<div class="room-code-badge hidden" id="joinRoomCodeBadge">----</div>
-<div class="form-grid">
-<div>
-<label for="playerName">Tu nombre</label>
-<input autocomplete="off" id="playerName" maxlength="22" placeholder="Ejemplo: Lucía"/>
-</div>
-<div>
-<label>Elige tu monigote</label>
-<div class="avatar-grid" id="avatarGrid"></div>
-</div>
-</div>
-<button class="btn" id="joinBtn">Entrar a jugar 🚀</button>
-<div class="notice hidden" id="joinNotice"></div>
-</div>
-<div class="screen" id="screenSetup">
-<h1>Prepara la partida</h1>
-<p class="subtitle">Eres el primero en entrar: tú eliges la temática y las preguntas.</p>
-<div class="notice">Comparte este código con tus alumnos:</div>
-<div class="room-code-badge" id="setupRoomCodeBadge">----</div>
-<div class="form-grid two">
-<div>
-<label for="topicInput">Temática del trivial</label>
-<input autocomplete="off" id="topicInput" placeholder="Ejemplo: animales, planetas, tablas de multiplicar..."/>
-</div>
-<div>
-<label for="questionCount">Preguntas</label>
-<select id="questionCount">
-<option value="5">5</option>
-<option selected="" value="10">10</option>
-<option value="15">15</option>
-<option value="20">20</option>
-</select>
-</div>
-</div>
-<button class="btn secondary" id="saveSetupBtn">Guardar temática 🎯</button>
-<div class="notice">Cuando estén todos conectados, pulsa <strong>Empezar partida</strong>.</div>
-</div>
-<div class="screen" id="screenWaiting">
-<h1>Esperando jugadores...</h1>
-<p class="subtitle" id="waitingText">La partida está preparada.</p>
-<div class="room-code-badge hidden" id="roomCodeBadge">----</div>
-<div class="status-big">
-<div>
-<div style="font-size: 96px;">🙋‍♂️🙋‍♀️</div>
-<h2 id="playersCountBig">0 jugadores</h2>
-<p class="subtitle">Cuando estén todos, el creador puede empezar.</p>
-<button class="btn warning hidden" id="startGameBtn">Empezar partida ✨</button>
-</div>
-</div>
-</div>
-<div class="screen" id="screenLoading">
-<div class="status-big">
-<div>
-<div class="spinner"></div>
-<h1>Creando preguntas...</h1>
-<p class="subtitle">La IA está preparando el trivial. Que nadie toque nada sospechoso.</p>
-</div>
-</div>
-</div>
-<div class="screen" id="screenGame">
-<div class="question-meta">
-<div class="meta-badge" id="questionNumber">Pregunta 1/10</div>
-<div class="meta-badge topic" id="topicBadge">Tema</div>
-<div class="meta-badge timer" id="timerBadge">20</div>
-</div>
-<div class="question-box">
-<p class="question-text" id="questionText">Pregunta...</p>
-</div>
-<div class="answers" id="answersBox"></div>
-<div class="feedback" id="feedbackBox"></div>
-<button class="btn secondary hidden" id="nextQuestionBtn" style="margin-top: 22px;">Siguiente pregunta ➡️</button>
-</div>
-<div class="screen" id="screenFinished">
-<h1>¡Partida terminada!</h1>
-<p class="subtitle">Clasificación final</p>
-<div class="big-score" id="winnerName">🏆</div>
-<div class="final-ranking-section hidden" id="finalRankingSection">
-<h2 style="display: none;"><span style="display: none;">🏆 Ranking</span> final</h2>
-<div class="final-ranking-list" id="finalRankingList"></div>
-</div>
-<div class="notice">La sala se limpiará automáticamente en unos segundos para poder empezar una nueva partida.</div>
-<button class="btn danger hidden" id="resetGameBtn">Crear nueva partida 🔄</button>
-</div>
-</section>
-<aside class="side-card">
-<div class="host-auth-box" id="hostAuthBox">
-<strong>👩‍🏫 Profesor</strong>
-<div class="host-auth-status" id="hostAuthStatus">Sin iniciar sesión.</div>
-<button class="btn secondary small" id="teacherLoginBtn">Iniciar con Google</button>
-<button class="btn danger small hidden" id="teacherLogoutBtn" style="margin-top: 10px;">Cerrar sesión</button>
-</div>
-<button class="btn danger small hidden" id="cancelGameBtn">Cancelar partida 🛑</button>
-<button class="btn secondary small hidden" id="leaveRoomBtn" style="margin-top: 10px;">Salir de la sala 🚪</button>
-<div class="side-section" id="rankingSection">
-<h3 style="margin-top: 18px;"><span style="display: none;">🏆 Ranking</span></h3>
-<div class="ranking-list" id="rankingList"></div>
-</div>
-<div class="side-section" id="playersSection">
-<h3 style="margin-top: 24px;">👥 Jugadores</h3>
-<div class="players-list" id="playersList"></div>
-</div>
-<p class="small-note">
+
+          <div class="form-grid" id="roomJoinForm">
+            <div>
+              <label for="roomCodeInput">Código de sala para alumnos</label>
+              <input id="roomCodeInput" maxlength="8" placeholder="Ejemplo: 482913" autocomplete="off" inputmode="numeric" />
+            </div>
+          </div>
+
+          <div class="room-actions only-join" id="roomActions">
+            <button class="btn secondary" id="joinRoomBtn">Entrar en sala 🔑</button>
+            <button class="btn warning hidden" id="createRoomBtn">Crear sala nueva ✨</button>
+          </div>
+
+          <div class="room-mini" id="studentRoomHint">Si eres alumno, escribe el código de sala que te dé tu profesor.</div>
+          <div class="notice hidden" id="roomNotice"></div>
+        </div>
+
+        <div id="screenJoin" class="screen">
+          <h1>¡Entra al trivial!</h1>
+          <p class="subtitle">Escribe tu nombre y elige un monigote para unirte a la partida de clase.</p>
+          <div class="room-code-badge hidden" id="joinRoomCodeBadge">----</div>
+
+          <div class="form-grid">
+            <div>
+              <label for="playerName">Tu nombre</label>
+              <input id="playerName" maxlength="22" placeholder="Ejemplo: Lucía" autocomplete="off" />
+            </div>
+            <div>
+              <label>Elige tu monigote</label>
+              <div class="avatar-grid" id="avatarGrid"></div>
+            </div>
+          </div>
+
+          <button class="btn" id="joinBtn">Entrar a jugar 🚀</button>
+          <div class="notice hidden" id="joinNotice"></div>
+        </div>
+
+        <div id="screenSetup" class="screen">
+          <h1>Prepara la partida</h1>
+          <p class="subtitle">Eres el primero en entrar: tú eliges la temática y las preguntas.</p>
+          <div class="notice">Comparte este código con tus alumnos:</div>
+          <div class="room-code-badge" id="setupRoomCodeBadge">----</div>
+
+          <div class="form-grid two">
+            <div>
+              <label for="topicInput">Temática del trivial</label>
+              <input id="topicInput" placeholder="Ejemplo: animales, planetas, tablas de multiplicar..." autocomplete="off" />
+            </div>
+            <div>
+              <label for="questionCount">Preguntas</label>
+              <select id="questionCount">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn secondary" id="saveSetupBtn">Guardar temática 🎯</button>
+          <div class="notice">Cuando estén todos conectados, pulsa <strong>Empezar partida</strong>.</div>
+        </div>
+
+        <div id="screenWaiting" class="screen">
+          <h1>Esperando jugadores...</h1>
+          <p class="subtitle" id="waitingText">La partida está preparada.</p>
+          <div class="room-code-badge hidden" id="roomCodeBadge">----</div>
+
+          <div class="status-big">
+            <div>
+              <div style="font-size: 96px;">🙋‍♂️🙋‍♀️</div>
+              <h2 id="playersCountBig">0 jugadores</h2>
+              <p class="subtitle">Cuando estén todos, el creador puede empezar.</p>
+              <button class="btn warning hidden" id="startGameBtn">Empezar partida ✨</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="screenLoading" class="screen">
+          <div class="status-big">
+            <div>
+              <div class="spinner"></div>
+              <h1>Creando preguntas...</h1>
+              <p class="subtitle">La IA está preparando el trivial. Que nadie toque nada sospechoso.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="screenGame" class="screen">
+          <div class="question-meta">
+            <div class="meta-badge" id="questionNumber">Pregunta 1/10</div>
+            <div class="meta-badge topic" id="topicBadge">Tema</div>
+            <div class="meta-badge timer" id="timerBadge">20</div>
+          </div>
+
+          <div class="question-box">
+            <p class="question-text" id="questionText">Pregunta...</p>
+          </div>
+
+          <div class="answers" id="answersBox"></div>
+          <div class="feedback" id="feedbackBox"></div>
+
+          <button class="btn secondary hidden" id="nextQuestionBtn" style="margin-top: 22px;">Siguiente pregunta ➡️</button>
+        </div>
+
+        <div id="screenFinished" class="screen">
+          <h1>¡Partida terminada!</h1>
+          <p class="subtitle">Clasificación final</p>
+          <div class="big-score" id="winnerName">🏆</div>
+          <div class="final-ranking-section hidden" id="finalRankingSection">
+            <h2 style="display: none;"><span style="display: none;">🏆 Ranking</span> final</h2>
+            <div class="final-ranking-list" id="finalRankingList"></div>
+          </div>
+          <div class="notice">La sala se limpiará automáticamente en unos segundos para poder empezar una nueva partida.</div>
+          <button class="btn danger hidden" id="resetGameBtn">Crear nueva partida 🔄</button>
+        </div>
+      </section>
+
+      <aside class="side-card">
+        <div class="host-auth-box" id="hostAuthBox">
+          <strong>👩‍🏫 Profesor</strong>
+          <div class="host-auth-status" id="hostAuthStatus">Sin iniciar sesión.</div>
+          <button class="btn secondary small" id="teacherLoginBtn">Iniciar con Google</button>
+          <button class="btn danger small hidden" id="teacherLogoutBtn" style="margin-top: 10px;">Cerrar sesión</button>
+        </div>
+
+        
+        <button class="btn secondary small hidden" id="leaveRoomBtn" style="margin-top: 10px;">Salir de la sala 🚪</button>
+
+        <div class="side-section" id="rankingSection">
+          <h3 style="margin-top: 18px;"><span style="display: none;">🏆 Ranking</span></h3>
+          <div class="ranking-list" id="rankingList"></div>
+        </div>
+
+        <div class="side-section" id="playersSection">
+          <h3 style="margin-top: 24px;">👥 Jugadores</h3>
+          <div class="players-list" id="playersList"></div>
+        </div>
+
+        <p class="small-note">
           Sala actual: <strong id="sideRoomCode">—</strong>. 
         </p>
-<div class="copyright-note">
-<div class="creator-image-wrap">
-<img alt="Rafael Gimeno" class="creator-image" src="yo.png"/>
-</div>
-<div>© By Rafael Gimeno</div>
-</div>
-</aside>
-</div>
-</main>
-<script type="module">
+
+        <div class="copyright-note">
+          <div class="creator-image-wrap">
+            <img src="yo.png" alt="Rafael Gimeno" class="creator-image" />
+          </div>
+          <div>© By Rafael Gimeno</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script type="module">
     /************************************************************
      * CONFIGURACIÓN WEB DE FIREBASE
      ************************************************************/
@@ -3173,6 +3206,7 @@
   </script>
 </body>
 </html>
+
 <script>
   // Add logic here to show the ranking when required (e.g., after a game finishes)
   function showRanking() {
@@ -3183,6 +3217,7 @@
 
   // Optionally, you can call showRanking() based on specific events like the game being over
 </script>
+
 <script>
   // Add logic here to show the ranking when required (e.g., after a game finishes)
   function showRanking() {
