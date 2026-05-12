@@ -3397,3 +3397,21 @@
   moveCancelGameButtonBelowRanking();
   showCancelGameButtonForTeacher();
 </script>
+
+<script>
+  // Function to ensure the "Cancelar partida" button is shown and placed below the ranking section
+  function moveCancelGameButtonBelowRanking() {
+    const cancelGameButton = document.getElementById('cancelGameBtn');
+    const rankingSection = document.getElementById('rankingSection');
+
+    // Ensure the button appears below the ranking section when the game starts
+    if (/* condition to check if the game has started */) {
+      // Move the cancel button below the ranking section
+      rankingSection.appendChild(cancelGameButton);
+      cancelGameButton.style.display = 'inline-block';  // Ensure it's visible
+    }
+  }
+
+  // Call this function to adjust button placement and visibility when the game starts
+  moveCancelGameButtonBelowRanking();
+</script>
