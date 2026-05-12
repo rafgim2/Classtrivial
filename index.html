@@ -3296,3 +3296,20 @@
   // Call this function when the game starts or when the teacher enters the game
   showCancelGameButtonForTeacher();
 </script>
+
+<script>
+  // Function to move the "Cancelar partida" button below the ranking when the game starts
+  function moveCancelGameButtonBelowRanking() {
+    const cancelGameButton = document.getElementById('cancelGameBtn');
+    const rankingSection = document.getElementById('rankingSection');
+
+    // Check if the game has started
+    if (/* condition for game start */) {
+      // Move the button below the ranking
+      rankingSection.appendChild(cancelGameButton);
+    }
+  }
+
+  // Call this function when the game starts
+  moveCancelGameButtonBelowRanking();
+</script>
