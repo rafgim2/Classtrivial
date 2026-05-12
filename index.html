@@ -1216,89 +1216,6 @@
       display: none !important;
     }
 
-    /* 🖥️ Pantalla completa al empezar la partida */
-    body.game-fullscreen-ui {
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    body.game-fullscreen-ui .topbar {
-      display: none;
-    }
-
-    body.game-fullscreen-ui .app {
-      width: min(1640px, calc(100% - 18px));
-      padding-top: 12px;
-      padding-bottom: 12px;
-    }
-
-    body.game-fullscreen-ui .card,
-    body.game-fullscreen-ui .side-card {
-      min-height: calc(100dvh - 24px);
-    }
-
-    /* 📱 En pantallas bajitas: compacta un poco para que quepa mejor (y si no, se puede hacer scroll) */
-    @media (max-height: 740px) {
-      body.game-fullscreen-ui .app { padding-top: 8px; padding-bottom: 8px; }
-      body.game-fullscreen-ui .card { padding: 16px; }
-      body.game-fullscreen-ui .side-card { padding: 16px; }
-      body.game-fullscreen-ui .question-meta { margin-bottom: 14px; gap: 10px; }
-      body.game-fullscreen-ui .question-box { margin-bottom: 14px; padding: 16px; }
-      body.game-fullscreen-ui .answer { min-height: 86px; padding: 14px; }
-      body.game-fullscreen-ui #nextQuestionBtn { margin-top: 14px !important; }
-    }
-
-
-    .fullscreen-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9997;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      background: rgba(17, 24, 39, 0.55);
-      backdrop-filter: blur(6px);
-    }
-
-    .fullscreen-overlay.hidden {
-      display: none;
-    }
-
-    .fullscreen-card {
-      width: min(560px, 94vw);
-      border-radius: 34px;
-      padding: clamp(20px, 4vw, 34px);
-      text-align: center;
-      background: rgba(255,255,255,0.96);
-      border: 5px solid #fde68a;
-      box-shadow: 0 22px 60px rgba(0,0,0,0.30), inset 0 0 0 4px rgba(255,255,255,0.7);
-    }
-
-    .fullscreen-icon {
-      font-size: clamp(58px, 12vw, 96px);
-      margin-bottom: 10px;
-    }
-
-    .fullscreen-card h2 {
-      font-size: clamp(28px, 5vw, 46px);
-      margin-bottom: 10px;
-    }
-
-    .fullscreen-card p {
-      margin: 0 auto 18px;
-      max-width: 440px;
-      color: #374151;
-      font-size: clamp(18px, 2.6vw, 24px);
-      font-weight: 900;
-      line-height: 1.15;
-    }
-
-    .fullscreen-actions {
-      display: grid;
-      gap: 12px;
-    }
-
   </style>
 </head>
 
@@ -1323,19 +1240,6 @@
       <p class="loser-message">Sigue practicando y en la próxima ronda puedes ganar.</p>
       <div class="loser-winner-line" id="loserWinnerLine">Ganador: —</div>
       <button class="btn secondary loser-close" id="loserCloseBtn">Cerrar mensaje ⭐</button>
-    </div>
-  </div>
-
-
-  <div class="fullscreen-overlay hidden" id="fullscreenOverlay">
-    <div class="fullscreen-card">
-      <div class="fullscreen-icon">🔳</div>
-      <h2>Pantalla completa</h2>
-      <p>Para jugar sin distracciones, toca para poner el trivial a pantalla completa.</p>
-      <div class="fullscreen-actions">
-        <button class="btn" id="enterFullscreenBtn">Activar pantalla completa 🚀</button>
-        <button class="btn secondary small" id="skipFullscreenBtn">Continuar sin pantalla completa</button>
-      </div>
     </div>
   </div>
 
@@ -1614,9 +1518,6 @@
     let unsubscribeRoom = null;
     let unsubscribePlayers = null;
 
-
-    let fullscreenPromptDismissedFor = "";
-    let fullscreenAutoTriedFor = "";
     // Música de fondo: solo se intenta reproducir en el dispositivo host.
     const hostMusic = new Audio("music.mp3");
     hostMusic.loop = true;
@@ -1658,10 +1559,6 @@
     $("teacherLogoutBtn").addEventListener("click", teacherLogout);
     $("winnerCloseBtn").addEventListener("click", hideWinnerCelebration);
     $("loserCloseBtn").addEventListener("click", hideLoserEncouragement);
-    $("enterFullscreenBtn").addEventListener("click", enterFullscreenFromPrompt);
-    $("skipFullscreenBtn").addEventListener("click", skipFullscreenPrompt);
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
 
 
     $("roomCodeInput").addEventListener("keydown", (ev) => {
@@ -1680,7 +1577,6 @@
       $("roomCodeInput").value = roomCode;
       renderAvatarChoices();
       updateSidePanelVisibility();
-      updateGameFullscreenUi();
 
       // Necesario si en iOS/Safari el inicio con Google se hace por redirección.
       getRedirectResult(auth).catch((error) => {
@@ -1900,8 +1796,6 @@
       renderPlayers();
       renderRanking();
       updateRoomStatus();
-      document.body.classList.remove("game-fullscreen-ui");
-      hideFullscreenOverlay();
       showScreen("room");
     }
 
@@ -2091,12 +1985,6 @@
         return;
       }
 
-      // 🔳 Pantalla completa: intento inmediato al entrar (clic/Enter del usuario).
-      // Importante: debe ocurrir ANTES del primer await para que el navegador lo acepte como gesto.
-      if (fullscreenSupported() && !isFullscreenActive()) {
-        requestAppFullscreen().catch(() => {});
-      }
-
       // El profesor autorizado entra automáticamente como host, sin pedir nombre.
       if (isAllowedHostAccount) {
         await ensureHostPlayer();
@@ -2178,10 +2066,6 @@
         alert("Todavía no hay alumnos conectados.");
         return;
       }
-
-
-      // Intentamos pantalla completa en el gesto del botón (si el navegador lo permite).
-      await requestAppFullscreen();
 
       const generationId = makeId();
 
@@ -2325,8 +2209,6 @@
     }
 
     async function answerQuestion(selectedIndex) {
-      // Si el alumno no activó pantalla completa al empezar, lo intentamos en el primer toque.
-      maybeEnterFullscreenOnUserGesture();
       if (!playerId || !myPlayer || room.status !== "playing") return;
       if (isHost || myPlayer.isTeacher) return;
 
@@ -2441,134 +2323,6 @@
       await cleanupAndResetRoom({ clearLocalHost: true });
     }
 
-
-    /************************************************************
-     * PANTALLA COMPLETA
-     ************************************************************/
-    function fullscreenSupported() {
-      const el = document.documentElement;
-      return Boolean(el.requestFullscreen || el.webkitRequestFullscreen);
-    }
-
-    function isFullscreenActive() {
-      return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
-    }
-
-    async function requestAppFullscreen() {
-      if (!fullscreenSupported()) return false;
-      if (isFullscreenActive()) return true;
-
-      const el = document.documentElement;
-      const fn = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (!fn) return false;
-
-      try {
-        const result = fn.call(el);
-        if (result && typeof result.then === "function") await result;
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }
-
-    function hideFullscreenOverlay() {
-      const overlay = $("fullscreenOverlay");
-      overlay?.classList.add("hidden");
-    }
-
-    function showFullscreenOverlay() {
-      const overlay = $("fullscreenOverlay");
-      overlay?.classList.remove("hidden");
-    }
-
-    function getCurrentGameId() {
-      return room?.generationId || (roomCode ? `room_${roomCode}` : "");
-    }
-
-    function updateGameFullscreenUi() {
-      const active = Boolean(room && ["loading", "playing", "finished"].includes(room.status));
-      document.body.classList.toggle("game-fullscreen-ui", active);
-
-      // El pop-up de pantalla completa puede mostrarse ya en la sala (waiting) para que nadie llegue tarde.
-      // La lógica de mostrar/ocultar se centraliza en maybeOfferFullscreen().
-      maybeOfferFullscreen();
-    }
-
-    async function enterFullscreenFromPrompt() {
-      const gameId = getCurrentGameId();
-      const ok = await requestAppFullscreen();
-      if (ok && gameId) fullscreenPromptDismissedFor = gameId;
-      hideFullscreenOverlay();
-    }
-
-    function skipFullscreenPrompt() {
-      const gameId = getCurrentGameId();
-      if (gameId) fullscreenPromptDismissedFor = gameId;
-      hideFullscreenOverlay();
-    }
-
-    async function tryAutoFullscreenOnce() {
-      if (!room || room.status !== "playing") return;
-      if (!fullscreenSupported()) return;
-
-      const gameId = getCurrentGameId();
-      if (!gameId || fullscreenAutoTriedFor === gameId) return;
-
-      fullscreenAutoTriedFor = gameId;
-      await requestAppFullscreen();
-      maybeOfferFullscreen();
-    }
-
-    function maybeOfferFullscreen() {
-      const overlay = $("fullscreenOverlay");
-      if (!overlay) return;
-
-      // Solo tiene sentido si ya hemos entrado como jugador (no en la pantalla de nombre).
-      if (!playerId || !myPlayer || myPlayer.isTeacher) {
-        overlay.classList.add("hidden");
-        return;
-      }
-
-      // Permitimos ofrecer pantalla completa ya en la sala (setup/waiting) para que nadie llegue tarde,
-      // y también durante loading/playing.
-      if (!room || !["setup", "waiting", "loading", "playing"].includes(room.status)) {
-        overlay.classList.add("hidden");
-        return;
-      }
-
-      if (!fullscreenSupported()) {
-        overlay.classList.add("hidden");
-        return;
-      }
-
-      const gameId = getCurrentGameId();
-      if (!gameId) {
-        overlay.classList.add("hidden");
-        return;
-      }
-
-      const dismissed = fullscreenPromptDismissedFor === gameId;
-      const active = isFullscreenActive();
-      overlay.classList.toggle("hidden", dismissed || active);
-    }
-
-    function handleFullscreenChange() {
-      maybeOfferFullscreen();
-    }
-
-    async function maybeEnterFullscreenOnUserGesture() {
-      if (!room || room.status !== "playing") return;
-      if (!fullscreenSupported() || isFullscreenActive()) return;
-
-      const gameId = getCurrentGameId();
-      if (gameId && fullscreenPromptDismissedFor === gameId) return;
-
-      const ok = await requestAppFullscreen();
-      if (ok && gameId) fullscreenPromptDismissedFor = gameId;
-      hideFullscreenOverlay();
-    }
-
-
     /************************************************************
      * PANTALLAS
      ************************************************************/
@@ -2578,11 +2332,9 @@
         updateCancelButton();
         updateSideRoomCode();
         updateSidePanelVisibility();
-        updateGameFullscreenUi();
         return;
       }
 
-      updateGameFullscreenUi();
       if (!room) return;
 
       updateRoomCodeBadge();
@@ -2644,8 +2396,6 @@
         if (isHost) startHostMusic();
         showScreen("game");
         renderGame();
-        tryAutoFullscreenOnce();
-        maybeOfferFullscreen();
       }
 
       if (room.status === "finished") {
