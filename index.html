@@ -2060,7 +2060,8 @@
      * MÚSICA DE FONDO (PROFESOR Y ALUMNOS)
      * - Archivos esperados: music1.mp3 ... music18.mp3
      * - El profesor elige uno al azar al iniciar y lo guarda en Firestore.
-     * - Los alumnos reproducen ese mismo archivo cuando empieza la partida.
+     * - Profesor y alumnos reproducen ese mismo archivo desde la pantalla de carga,
+     *   mientras se preparan las preguntas.
      ************************************************************/
     const HOST_MUSIC_TOTAL = 18;
     const HOST_MUSIC_STORAGE_KEY = "trivial_host_music_bag_v1";
@@ -3318,10 +3319,15 @@
       }
 
       if (room.status === "loading") {
+        // La música empieza ya mientras se preparan las preguntas,
+        // también en los ordenadores de los alumnos.
+        startHostMusic();
         showScreen("loading");
       }
 
       if (room.status === "playing") {
+        // Mantenemos esta llamada como refuerzo por si el navegador bloqueó
+        // el primer intento de reproducción durante la pantalla de carga.
         startHostMusic();
         showScreen("game");
         renderGame();
