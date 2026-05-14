@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trivial IA para clase · música solo profesor</title>
+  <title>Trivial IA para clase · música y voz para todos</title>
 
   <style>
     :root {
@@ -2122,12 +2122,12 @@
     const unlockedQuestionSpeechKeys = new Set();
 
     /************************************************************
-     * MÚSICA DE FONDO (SOLO PROFESOR)
+     * MÚSICA DE FONDO (PROFESOR Y ALUMNOS)
      * - Archivos esperados: music1.mp3 ... music18.mp3
      * - El profesor elige uno al azar al iniciar la partida.
-     * - Solo el dispositivo del profesor reproduce música ambiente desde loading.
-     * - Los alumnos no cargan ni reproducen música de fondo.
-     * - En alumnos solo suenan los efectos de acierto/error al responder.
+     * - El archivo elegido se guarda en bgMusicFile para que alumnos y profesor
+     *   reproduzcan la misma música ambiente desde loading/playing.
+     * - En móviles, el navegador puede exigir una pulsación previa para activar audio.
      ************************************************************/
     const HOST_MUSIC_TOTAL = 18;
     const HOST_MUSIC_STORAGE_KEY = "trivial_host_music_bag_v1";
@@ -2176,7 +2176,7 @@
       try { hostMusic.load(); } catch (_) {}
     }
 
-    // Música de victoria: solo suena en el dispositivo del profesor.
+    // Música de victoria: puede sonar también en el alumno ganador.
     const winnerMusic = new Audio("ganador.mp3");
     winnerMusic.loop = false;
     winnerMusic.volume = 0.9;
@@ -3248,7 +3248,7 @@
 
       if (!isTeacherObserver && questionLocked && !alreadyAnswered) {
         feedback.classList.add("show", "info");
-        feedback.textContent = "⏳ Espera un momento. Podrás responder cuando el profesor termine la lectura.";
+        feedback.textContent = "⏳ Espera un momento. Podrás responder cuando termine la lectura en voz alta.";
       }
 
       if (!isTeacherObserver && alreadyAnswered) {
@@ -3459,15 +3459,15 @@
       }
 
       if (room.status === "loading") {
-        // La música empieza ya mientras se preparan las preguntas,
-        // pero solo en el dispositivo del profesor.
+        // La música empieza ya mientras se preparan las preguntas
+        // en el profesor y en los alumnos conectados.
         startHostMusic();
         showScreen("loading");
       }
 
       if (room.status === "playing") {
-        // Refuerzo por si el navegador del profesor bloqueó el primer intento
-        // de reproducción durante la pantalla de carga. En alumnos no hace nada.
+        // Refuerzo por si el navegador bloqueó el primer intento
+        // de reproducción durante la pantalla de carga.
         startHostMusic();
         showScreen("game");
         renderGame();
@@ -3903,16 +3903,14 @@
       if (room.questionVoiceEnabled === false) return;
       if (room.status !== "playing" || room.questionReading !== true) return;
 
-      // La lectura en voz alta SOLO debe sonar en el dispositivo del profesor.
-      // Los alumnos esperan el desbloqueo global de Firestore, pero no ejecutan TTS.
-      if (!isHost) return;
-
       const readKey = room.questionReadKey || makeQuestionReadKey(room.generationId || "game", index);
       if (lastSpokenQuestionKey === readKey) return;
       lastSpokenQuestionKey = readKey;
 
-      // El profesor desbloquea la pregunta en Firestore cuando termina su lectura.
-      speakQuestionOnThisDevice(question.question, readKey, { unlockRoomWhenFinished: true });
+      // Ahora la lectura suena tanto en el profesor como en los alumnos.
+      // Solo el profesor desbloquea la pregunta en Firestore al terminar su lectura;
+      // los alumnos mantienen su propio bloqueo local hasta que termina la voz en su dispositivo.
+      speakQuestionOnThisDevice(question.question, readKey, { unlockRoomWhenFinished: isHost });
     }
 
     function getPreferredQuestionVoice() {
@@ -4072,18 +4070,10 @@
     }
 
     function startHostMusic(forceFile = null) {
-      // Música ambiente: solo debe sonar en el dispositivo del profesor.
-      // Aunque la sala guarde bgMusicFile, los alumnos no lo cargan ni lo reproducen.
-      if (!isHost && !myPlayer?.isTeacher) {
-        try {
-          hostMusic.pause();
-          hostMusic.currentTime = 0;
-        } catch (_) {}
-        return;
-      }
-
+      // Música ambiente para profesor y alumnos.
       // El profesor elige el archivo al iniciar la partida y lo guarda en bgMusicFile.
-      const desired = forceFile || room?.bgMusicFile || currentHostMusicFile || getNextHostMusicFile();
+      // Los alumnos reproducen ese mismo archivo; no eligen uno al azar por su cuenta.
+      const desired = forceFile || room?.bgMusicFile || (isHost ? (currentHostMusicFile || getNextHostMusicFile()) : "");
       if (!desired) return;
 
       setHostMusicSource(desired);
@@ -4100,8 +4090,8 @@
     }
 
     function canPlayWinnerMusicHere() {
-      // La fanfarria/música de victoria solo debe sonar en el profesor.
-      return Boolean(isHost || myPlayer?.isTeacher);
+      // La fanfarria puede sonar en el profesor y en el alumno ganador.
+      return true;
     }
 
     function playWinnerMusic() {
