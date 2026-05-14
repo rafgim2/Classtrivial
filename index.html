@@ -3946,12 +3946,26 @@
         utterance.volume = 1;
 
         let finished = false;
+        let speechHasStarted = false;
+        let speechPollInterval = null;
+
+        const clearSpeechPoll = () => {
+          if (speechPollInterval) {
+            clearInterval(speechPollInterval);
+            speechPollInterval = null;
+          }
+        };
+
         const safeFinish = () => {
           if (finished) return;
           finished = true;
+          clearSpeechPoll();
           finish();
         };
 
+        utterance.onstart = () => {
+          speechHasStarted = true;
+        };
         utterance.onend = safeFinish;
         utterance.onerror = safeFinish;
 
@@ -3959,10 +3973,23 @@
           window.speechSynthesis.cancel();
           window.speechSynthesis.speak(utterance);
 
-          // Fallback por si algún navegador no dispara onend/onerror.
+          // Algunos navegadores no disparan bien onend. Este sondeo desbloquea
+          // casi al instante cuando la voz deja de hablar, sin esperar al fallback largo.
+          speechPollInterval = setInterval(() => {
+            if (window.speechSynthesis.speaking) {
+              speechHasStarted = true;
+              return;
+            }
+
+            if (speechHasStarted && !window.speechSynthesis.pending) {
+              safeFinish();
+            }
+          }, 120);
+
+          // Último recurso por si el navegador no informa correctamente ni onend ni speaking.
           const estimatedMs = Math.min(
             QUESTION_SPEECH_FALLBACK_MS,
-            Math.max(3500, text.length * 95)
+            Math.max(1800, text.length * 80)
           );
           setTimeout(safeFinish, estimatedMs);
         } catch (error) {
