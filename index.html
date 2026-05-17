@@ -1723,6 +1723,43 @@
       display: none !important;
     }
 
+
+    .credits-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #f0fdf4, #eff6ff 62%, #fef9c3);
+      border: 3px solid rgba(134, 239, 172, 0.78);
+      color: #14532d;
+      font-weight: 950;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+    }
+
+    .credits-box strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .credits-text {
+      font-size: 22px;
+      font-weight: 1000;
+      color: #111827;
+      line-height: 1.15;
+    }
+
+    .credits-mini {
+      margin-top: 6px;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.25;
+    }
+
+    .credits-box .btn {
+      margin-top: 12px;
+    }
+
   </style>
 </head>
 
@@ -1982,6 +2019,13 @@
           <div class="host-auth-status" id="hostAuthStatus">Sin iniciar sesión.</div>
           <button class="btn secondary small" id="teacherLoginBtn">Iniciar con Google</button>
           <button class="btn danger small hidden" id="teacherLogoutBtn" style="margin-top: 10px;">Cerrar sesión</button>
+
+          <div class="credits-box hidden" id="creditsBox">
+            <strong>🎟️ Partidas disponibles</strong>
+            <div class="credits-text" id="creditsText">Cargando partidas...</div>
+            <div class="credits-mini" id="creditsFreeText">Cada cuenta tiene 3 partidas gratis.</div>
+            <button class="btn secondary small" id="buyCreditsBtn" type="button">Comprar partidas</button>
+          </div>
         </div>
 
         <button class="btn danger small hidden" id="cancelGameBtn">Cancelar partida 🛑</button>
@@ -2037,6 +2081,9 @@
     const AUTO_NEXT_DELAY_MS = 1500;
     const ADMIN_EMAIL = "rafgim36@gmail.com";
     const AUTHORIZED_HOSTS_COLLECTION = "trivialAuthorizedHosts";
+    const CREDITS_COLLECTION = "trivialUserCredits";
+    const FREE_TRIAL_LIMIT = 3;
+    const PURCHASE_PAGE_URL = "./autorizar_cuentas_gmail.html";
 
     /************************************************************
      * IMPORTS DE FIREBASE
@@ -2111,6 +2158,8 @@
     let isHost = false;
     let currentUser = null;
     let isAllowedHostAccount = false;
+    let userCredits = null;
+    let unsubscribeCredits = null;
     let room = null;
     let players = [];
     let myPlayer = null;
@@ -2222,6 +2271,9 @@
     $("cancelGameBtn").addEventListener("click", cancelGame);
     $("teacherLoginBtn").addEventListener("click", teacherLogin);
     $("teacherLogoutBtn").addEventListener("click", teacherLogout);
+    $("buyCreditsBtn").addEventListener("click", () => {
+      window.location.href = PURCHASE_PAGE_URL;
+    });
     $("winnerCloseBtn").addEventListener("click", hideWinnerCelebration);
     $("loserCloseBtn").addEventListener("click", hideLoserEncouragement);
     $("toggleCustomTrivialBtn").addEventListener("click", toggleCustomTrivialPanel);
@@ -2261,6 +2313,7 @@
 
       onAuthStateChanged(auth, async (user) => {
         currentUser = user;
+        listenUserCredits(user);
         isAllowedHostAccount = await checkAllowedHostAccount(user);
         updateHostAuthBox();
         updateRoomAccessButtons();
@@ -2404,6 +2457,12 @@
     async function createNewRoom() {
       if (!isAllowedHostAccount) {
         showNotice("roomNotice", "Para crear una sala tienes que iniciar sesión con la cuenta autorizada del profesor.");
+        return;
+      }
+
+      const creditsInfo = getCreditsInfo();
+      if (creditsInfo.total <= 0) {
+        showNotice("roomNotice", "No te quedan partidas disponibles. Compra un pack para poder crear una sala nueva.");
         return;
       }
 
@@ -2586,6 +2645,95 @@
       }
     }
 
+    function listenUserCredits(user) {
+      unsubscribeCredits?.();
+      unsubscribeCredits = null;
+      userCredits = null;
+      updateCreditsBox();
+
+      if (!user?.uid) return;
+
+      const creditsRef = doc(db, CREDITS_COLLECTION, user.uid);
+      unsubscribeCredits = onSnapshot(creditsRef, (snap) => {
+        userCredits = snap.exists() ? snap.data() : {};
+        updateCreditsBox();
+        updateRoomAccessButtons();
+      }, (error) => {
+        console.error("No se han podido leer las partidas disponibles:", error);
+        userCredits = {};
+        updateCreditsBox();
+      });
+    }
+
+    function getCreditsInfo() {
+      const paid = Math.max(0, Number(userCredits?.creditsRemaining || 0));
+      const freeUsed = Math.max(0, Number(userCredits?.freeCreditsUsed || 0));
+      const freeRemaining = Math.max(0, FREE_TRIAL_LIMIT - freeUsed);
+      return {
+        paid,
+        freeUsed,
+        freeRemaining,
+        total: paid + freeRemaining
+      };
+    }
+
+    function updateCreditsBox() {
+      const box = $("creditsBox");
+      const text = $("creditsText");
+      const freeText = $("creditsFreeText");
+      if (!box || !text || !freeText) return;
+
+      const shouldShow = Boolean(currentUser && isAllowedHostAccount);
+      box.classList.toggle("hidden", !shouldShow);
+
+      if (!shouldShow) return;
+
+      const info = getCreditsInfo();
+      text.textContent = `${info.total} partidas disponibles`;
+
+      if (info.freeRemaining > 0) {
+        freeText.textContent = `${info.paid} compradas + ${info.freeRemaining} gratis. Las partidas compradas se gastan primero.`;
+      } else {
+        freeText.textContent = `${info.paid} compradas. Ya has usado las 3 partidas gratis de esta cuenta.`;
+      }
+    }
+
+    function getCreditErrorMessage(error) {
+      const code = String(error?.code || "");
+      const message = String(error?.message || "");
+
+      if (code.includes("resource-exhausted")) {
+        return "No te quedan partidas disponibles. Compra un pack para poder generar más trivials.";
+      }
+
+      if (code.includes("unauthenticated")) {
+        return "Tienes que iniciar sesión con Google para generar una partida.";
+      }
+
+      return message || "No se ha podido comprobar o descontar la partida disponible.";
+    }
+
+    async function consumeCreditForGame() {
+      const consumeTrivialCredit = httpsCallable(functions, "consumeTrivialCredit");
+      const result = await consumeTrivialCredit({
+        roomCode: roomCode || ""
+      });
+
+      if (result.data) {
+        userCredits = {
+          ...(userCredits || {}),
+          creditsRemaining: result.data.creditsRemaining,
+          creditsPurchasedTotal: result.data.creditsPurchasedTotal,
+          freeCreditsUsed: result.data.freeCreditsUsed,
+          creditsUsedTotal: result.data.creditsUsedTotal,
+        };
+        updateCreditsBox();
+        updateRoomAccessButtons();
+      }
+
+      return result.data;
+    }
+
     async function claimHostIfAllowed() {
       // Si la cuenta autorizada ha iniciado sesión, este dispositivo toma
       // el control sin pedir nombre al profesor.
@@ -2668,6 +2816,8 @@
       const logoutBtn = $("teacherLogoutBtn");
       if (!status || !loginBtn || !logoutBtn) return;
 
+      updateCreditsBox();
+
       if (!currentUser) {
         status.textContent = "Para crear preguntas, inicia sesión con la cuenta del profesor.";
         loginBtn.classList.remove("hidden");
@@ -2695,17 +2845,22 @@
       if (!createBtn || !joinBtn || !actions || !joinForm) return;
 
       const canCreateRoom = Boolean(isAllowedHostAccount);
+      const creditsInfo = getCreditsInfo();
+      const hasCredits = creditsInfo.total > 0;
 
       // Profesor autorizado: solo ve Crear sala nueva.
       // Alumnos/no autorizados: solo ven campo de código + Entrar en sala.
       createBtn.classList.toggle("hidden", !canCreateRoom);
+      createBtn.disabled = canCreateRoom && !hasCredits;
       joinBtn.classList.toggle("hidden", canCreateRoom);
       joinForm.classList.toggle("hidden", canCreateRoom);
       actions.classList.add("only-join");
 
       if (hint) {
         hint.textContent = canCreateRoom
-          ? "Pulsa Crear sala nueva. La app generará un código automáticamente para tus alumnos."
+          ? (hasCredits
+            ? "Pulsa Crear sala nueva. La app generará un código automáticamente para tus alumnos."
+            : "No te quedan partidas disponibles. Compra un pack para poder crear una sala nueva.")
           : "Si eres alumno, escribe el código de sala que te dé tu profesor.";
       }
     }
@@ -2835,6 +2990,12 @@
         return;
       }
 
+      const creditsInfo = getCreditsInfo();
+      if (creditsInfo.total <= 0) {
+        alert("No te quedan partidas disponibles. Compra un pack para poder generar más trivials.");
+        return;
+      }
+
       const generationId = makeId();
       const bgMusicFile = getNextHostMusicFile();
       const questionVoiceEnabled = room.questionVoiceEnabled !== false;
@@ -2868,6 +3029,8 @@
           stopHostMusic();
           return;
         }
+
+        await consumeCreditForGame();
 
         await updateDoc(roomRef, {
           status: "playing",
