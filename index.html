@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trivial IA para clase · música y voz para todos</title>
+  <title>Trivial IA para clase · audio del profesor y efectos para alumnos</title>
 
   <style>
     :root {
@@ -1879,11 +1879,11 @@
 
           <div class="voice-toggle-panel" id="questionVoicePanel">
             <label class="voice-toggle-label" for="questionVoiceEnabled">
-              <input id="questionVoiceEnabled" type="checkbox" checked />
+              <input id="questionVoiceEnabled" type="checkbox" />
               <span>Leer cada pregunta en voz alta antes de responder 🔊</span>
             </label>
             <div class="voice-toggle-hint">
-              Activado: profesor y alumnos escuchan la pregunta en voz alta, y los alumnos esperan hasta que termina la voz. Desactivado: los alumnos pueden responder desde que aparece la pregunta.
+              Activado: solo el profesor escucha la pregunta en voz alta; los alumnos esperan hasta que termina la lectura del profesor. Desactivado: los alumnos pueden responder desde que aparece la pregunta.
             </div>
           </div>
 
@@ -2998,7 +2998,7 @@
 
       const generationId = makeId();
       const bgMusicFile = getNextHostMusicFile();
-      const questionVoiceEnabled = room.questionVoiceEnabled !== false;
+      const questionVoiceEnabled = room.questionVoiceEnabled === true;
 
       try {
         startHostMusic(bgMusicFile);
@@ -3172,7 +3172,7 @@
     function syncSetupFormFromRoom() {
       if (!room) return;
       const updatedKey = room.updatedAt?.seconds || room.createdAt?.seconds || "sin-fecha";
-      const syncKey = `${roomCode}_${room.status}_${updatedKey}_${room.customQuestions?.length || 0}_${room.questionVoiceEnabled !== false}`;
+      const syncKey = `${roomCode}_${room.status}_${updatedKey}_${room.customQuestions?.length || 0}_${room.questionVoiceEnabled === true}`;
       if (lastSetupRoomSyncKey === syncKey) return;
 
       lastSetupRoomSyncKey = syncKey;
@@ -3180,7 +3180,7 @@
       $("questionCount").value = String(room.questionCount || 10);
       customQuestionsDraft = sanitizeQuestionsForStorage(room.customQuestions || []);
       if ($("completeWithAi")) $("completeWithAi").checked = room.completeWithAi !== false;
-      if ($("questionVoiceEnabled")) $("questionVoiceEnabled").checked = room.questionVoiceEnabled !== false;
+      if ($("questionVoiceEnabled")) $("questionVoiceEnabled").checked = room.questionVoiceEnabled === true;
       renderCustomQuestionBuilder();
       updateTopicFieldVisibility();
     }
@@ -3536,7 +3536,7 @@
           updatedAt: serverTimestamp()
         });
       } else {
-        const questionVoiceEnabled = room.questionVoiceEnabled !== false;
+        const questionVoiceEnabled = room.questionVoiceEnabled === true;
         await updateDoc(roomRef, {
           currentQuestion: next,
           questionReading: questionVoiceEnabled,
@@ -3661,21 +3661,21 @@
         showScreen("waiting");
         const customCount = Array.isArray(room.customQuestions) ? room.customQuestions.length : 0;
         const aiText = customCount && room.completeWithAi !== false ? " · completando con IA si falta" : "";
-        const voiceText = room.questionVoiceEnabled === false ? " · voz desactivada" : " · voz activada";
+        const voiceText = room.questionVoiceEnabled === true ? " · voz activada" : " · voz desactivada";
         $("waitingText").textContent = `${customCount ? "Trivial propio" : "Tema: " + (room.topic || "sin tema")} · ${room.questionCount || 10} preguntas${customCount ? ` · ${customCount} propias${aiText}` : ""}${voiceText}`;
         $("startGameBtn").classList.toggle("hidden", !isHost);
       }
 
       if (room.status === "loading") {
-        // La música empieza ya mientras se preparan las preguntas
-        // en el profesor y en los alumnos conectados.
+        // La música empieza ya mientras se preparan las preguntas,
+        // pero solo se reproduce en el dispositivo del profesor.
         startHostMusic();
         showScreen("loading");
       }
 
       if (room.status === "playing") {
         // Refuerzo por si el navegador bloqueó el primer intento
-        // de reproducción durante la pantalla de carga.
+        // de reproducción durante la pantalla de carga del profesor.
         startHostMusic();
         showScreen("game");
         renderGame();
@@ -3696,7 +3696,7 @@
         if (isHost) {
           hideWinnerCelebration();
           hideLoserEncouragement();
-          playWinnerMusicForHost(winner);
+          stopWinnerMusic();
         } else if (winner && winner.id === playerId) {
           hideLoserEncouragement();
           showWinnerCelebration(winner);
@@ -4095,7 +4095,7 @@
 
     function isQuestionLockedForAnswering() {
       if (!room || room.status !== "playing") return false;
-      if (room.questionVoiceEnabled === false) return false;
+      if (room.questionVoiceEnabled !== true) return false;
 
       const readKey = getCurrentQuestionReadKey();
       const globalLocked = room.questionReading === true || !room.questionStartedAt?.toMillis;
@@ -4108,17 +4108,19 @@
 
     function handleQuestionSpeechForThisDevice(question, index) {
       if (!question?.question) return;
-      if (room.questionVoiceEnabled === false) return;
+      if (room.questionVoiceEnabled !== true) return;
       if (room.status !== "playing" || room.questionReading !== true) return;
 
       const readKey = room.questionReadKey || makeQuestionReadKey(room.generationId || "game", index);
       if (lastSpokenQuestionKey === readKey) return;
       lastSpokenQuestionKey = readKey;
 
-      // Ahora la lectura suena tanto en el profesor como en los alumnos.
-      // Solo el profesor desbloquea la pregunta en Firestore al terminar su lectura;
-      // los alumnos mantienen su propio bloqueo local hasta que termina la voz en su dispositivo.
-      speakQuestionOnThisDevice(question.question, readKey, { unlockRoomWhenFinished: isHost });
+      // La lectura en voz alta solo suena en el profesor.
+      // Los alumnos no oyen esta voz; simplemente esperan a que el profesor desbloquee
+      // la pregunta en Firestore cuando termine la lectura en su dispositivo.
+      if (!isHost) return;
+
+      speakQuestionOnThisDevice(question.question, readKey, { unlockRoomWhenFinished: true });
     }
 
     function getPreferredQuestionVoice() {
@@ -4278,10 +4280,12 @@
     }
 
     function startHostMusic(forceFile = null) {
-      // Música ambiente para profesor y alumnos.
-      // El profesor elige el archivo al iniciar la partida y lo guarda en bgMusicFile.
-      // Los alumnos reproducen ese mismo archivo; no eligen uno al azar por su cuenta.
-      const desired = forceFile || room?.bgMusicFile || (isHost ? (currentHostMusicFile || getNextHostMusicFile()) : "");
+      // Música ambiente solo en el profesor.
+      // Los alumnos no reproducen música de fondo para que el sonido principal del aula
+      // salga únicamente del equipo del profesor.
+      if (!isHost) return;
+
+      const desired = forceFile || room?.bgMusicFile || currentHostMusicFile || getNextHostMusicFile();
       if (!desired) return;
 
       setHostMusicSource(desired);
@@ -4298,8 +4302,9 @@
     }
 
     function canPlayWinnerMusicHere() {
-      // La fanfarria puede sonar en el profesor y en el alumno ganador.
-      return true;
+      // La fanfarria solo debe sonar en el dispositivo del alumno ganador.
+      const winner = getStoredWinner();
+      return Boolean(!isHost && winner?.id && playerId && winner.id === playerId);
     }
 
     function playWinnerMusic() {
@@ -4352,7 +4357,9 @@
     }
 
     function playAnswerSound(correct) {
-      // Efectos de acierto/error: son los únicos sonidos de juego que suenan en alumnos.
+      // Efectos de acierto/error: solo en alumnos cuando responden.
+      if (isHost || myPlayer?.isTeacher) return;
+
       try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const ctx = new AudioContext();
@@ -4480,7 +4487,7 @@
         questionCount: 10,
         customQuestions: [],
         completeWithAi: true,
-        questionVoiceEnabled: true,
+        questionVoiceEnabled: false,
         questions: [],
         currentQuestion: 0,
         questionReading: false,
